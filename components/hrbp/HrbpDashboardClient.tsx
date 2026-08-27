@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import LogoutButton from "@/components/LogoutButton";
+import DashboardHeader from "@/components/DashboardHeader";
 import AddEmployeeForm from "@/components/hrbp/AddEmployeeForm";
+import EmptyState from "@/components/ui/EmptyState";
+import { IconAlertTriangle, IconDownload, IconUsers } from "@/components/ui/icons";
 import { assignEmployeeToSupAction, exportExcelBase64Action } from "@/lib/actions";
 import {
   DUNG_CONG_VIEC_LABEL,
@@ -79,53 +81,38 @@ export default function HrbpDashboardClient({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto" />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Xin chào, {hrbpName}</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Thêm nhân viên mới, hỗ trợ gắn Sup, xem toàn bộ đánh giá và xuất báo cáo Excel.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="badge bg-slate-100 text-slate-600">HRBP (Admin)</span>
+      <DashboardHeader
+        title={`Xin chào, ${hrbpName}`}
+        subtitle="Thêm nhân viên mới, hỗ trợ gắn Sup, xem toàn bộ đánh giá và xuất báo cáo Excel."
+        roleBadge={<span className="badge bg-slate-100 text-slate-600">HRBP (Admin)</span>}
+        actions={
           <button onClick={handleExport} disabled={exporting} className="btn-primary text-sm">
+            <IconDownload className="h-4 w-4" />
             {exporting ? "Đang xuất..." : "Xuất Excel"}
           </button>
-          <LogoutButton />
-        </div>
-      </header>
+        }
+      />
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Tổng nhân viên mới" value={`${employees.length}`} />
-        <StatCard label="Đang chờ nhận (POOL)" value={`${poolCount}`} highlight />
-        <StatCard label="Thuộc nhóm KPI giữ người 14 ngày" value={`${kpiCount}`} />
+        <StatCard label="Tổng nhân viên mới" value={`${employees.length}`} icon={<IconUsers className="h-5 w-5" />} />
+        <StatCard label="Đang chờ nhận (POOL)" value={`${poolCount}`} highlight icon={<IconUsers className="h-5 w-5" />} />
+        <StatCard label="Thuộc nhóm KPI giữ người 14 ngày" value={`${kpiCount}`} icon={<IconUsers className="h-5 w-5" />} />
         <StatCard
           label="Cảnh báo nguy cơ nghỉ việc"
           value={`${riskEmployeeIds.size}`}
           danger={riskEmployeeIds.size > 0}
+          icon={<IconAlertTriangle className="h-5 w-5" />}
         />
       </section>
 
-      <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
-        <button
-          onClick={() => setTab("nv")}
-          className={`rounded-md px-4 py-2 ${tab === "nv" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
-        >
+      <div className="mb-4 inline-flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+        <button onClick={() => setTab("nv")} className={`tab-pill ${tab === "nv" ? "tab-pill-active" : ""}`}>
           Nhân viên &amp; Gắn Sup
         </button>
-        <button
-          onClick={() => setTab("eval")}
-          className={`rounded-md px-4 py-2 ${tab === "eval" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
-        >
+        <button onClick={() => setTab("eval")} className={`tab-pill ${tab === "eval" ? "tab-pill-active" : ""}`}>
           Đánh giá
         </button>
-        <button
-          onClick={() => setTab("report")}
-          className={`relative rounded-md px-4 py-2 ${tab === "report" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
-        >
+        <button onClick={() => setTab("report")} className={`tab-pill ${tab === "report" ? "tab-pill-active" : ""}`}>
           Báo cáo tổng
           {riskEmployeeIds.size > 0 && (
             <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">
@@ -139,9 +126,9 @@ export default function HrbpDashboardClient({
         <div className="space-y-6">
           <AddEmployeeForm today={today} />
 
-          <div className="card overflow-x-auto">
+          <div className="table-shell overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead>
                 <tr>
                   <th className="px-4 py-3">Nhân viên</th>
                   <th className="px-4 py-3">Ca</th>
@@ -197,8 +184,8 @@ export default function HrbpDashboardClient({
                 })}
                 {employees.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="px-4 py-6 text-center text-slate-400">
-                      Chưa có nhân viên nào. Thêm mới ở form phía trên.
+                    <td colSpan={11}>
+                      <EmptyState title="Chưa có nhân viên nào" description="Thêm mới ở form phía trên." />
                     </td>
                   </tr>
                 )}
@@ -209,7 +196,7 @@ export default function HrbpDashboardClient({
       ) : tab === "eval" ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-slate-600">
+            <h2 className="section-title">
               Đánh giá của Sup ({supEvaluations.length})
             </h2>
             <div className="space-y-2">
@@ -239,7 +226,7 @@ export default function HrbpDashboardClient({
           </div>
 
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-slate-600">
+            <h2 className="section-title">
               Tự đánh giá của NV ({selfEvaluations.length})
             </h2>
             <div className="space-y-2">
@@ -280,7 +267,7 @@ export default function HrbpDashboardClient({
       ) : (
         <div className="space-y-6">
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-slate-600">
+            <h2 className="section-title">
               Cảnh báo nguy cơ nghỉ việc ({riskFlags.length} lượt / {riskEmployeeIds.size} NV)
             </h2>
             <p className="mb-2 text-xs text-slate-500">
@@ -313,7 +300,7 @@ export default function HrbpDashboardClient({
           </div>
 
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-slate-600">
+            <h2 className="section-title">
               Tổng hợp tự đánh giá của NV ({selfEvalSummary.total} lượt)
             </h2>
             <div className="card grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
@@ -372,12 +359,10 @@ export default function HrbpDashboardClient({
           </div>
 
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-slate-600">
-              Phân bổ khu vực theo Ca &amp; Tuần nhận việc
-            </h2>
-            <div className="card overflow-x-auto">
+            <h2 className="section-title">Phân bổ khu vực theo Ca &amp; Tuần nhận việc</h2>
+            <div className="table-shell overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead>
                   <tr>
                     <th className="px-4 py-3">Ca</th>
                     <th className="px-4 py-3">Tuần</th>
@@ -408,8 +393,8 @@ export default function HrbpDashboardClient({
                   ))}
                   {areaReport.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
-                        Chưa có NV nào đang trong 3 tuần nhận việc.
+                      <td colSpan={5}>
+                        <EmptyState title="Chưa có NV nào đang trong 3 tuần nhận việc" />
                       </td>
                     </tr>
                   )}
@@ -443,22 +428,39 @@ function StatCard({
   value,
   highlight,
   danger,
+  icon,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
   danger?: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
-    <div className={`card p-4 ${highlight ? "border-ghn-200 bg-ghn-50" : ""} ${danger ? "border-red-200 bg-red-50" : ""}`}>
-      <p className="text-sm text-slate-500">{label}</p>
-      <p
-        className={`mt-1 text-2xl font-bold ${
-          danger ? "text-red-700" : highlight ? "text-ghn-700" : "text-slate-900"
-        }`}
-      >
-        {value}
-      </p>
+    <div
+      className={`card card-interactive flex items-start justify-between gap-3 p-4 ${
+        highlight ? "border-ghn-200 bg-ghn-50" : ""
+      } ${danger ? "border-red-200 bg-red-50" : ""}`}
+    >
+      <div>
+        <p className="text-sm text-slate-500">{label}</p>
+        <p
+          className={`mt-1 text-2xl font-bold ${
+            danger ? "text-red-700" : highlight ? "text-ghn-700" : "text-slate-900"
+          }`}
+        >
+          {value}
+        </p>
+      </div>
+      {icon && (
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+            danger ? "bg-red-100 text-red-600" : highlight ? "bg-ghn-100 text-ghn-700" : "bg-slate-100 text-slate-500"
+          }`}
+        >
+          {icon}
+        </span>
+      )}
     </div>
   );
 }

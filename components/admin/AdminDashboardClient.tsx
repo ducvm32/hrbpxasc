@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormState, useFormStatus } from "react-dom";
-import LogoutButton from "@/components/LogoutButton";
+import DashboardHeader from "@/components/DashboardHeader";
+import Modal from "@/components/ui/Modal";
+import EmptyState from "@/components/ui/EmptyState";
 import {
   createAccountAction,
   setPasswordAction,
@@ -104,10 +106,8 @@ function AddAccountForm() {
         </div>
       )}
 
-      {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-      {state?.success && (
-        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-600">Đã tạo tài khoản mới.</p>
-      )}
+      {state?.error && <p className="alert-error">{state.error}</p>}
+      {state?.success && <p className="alert-success">Đã tạo tài khoản mới.</p>}
 
       <SubmitBtn label="Tạo tài khoản" pendingLabel="Đang tạo..." />
     </form>
@@ -123,31 +123,27 @@ function SetPasswordModal({ account, onClose }: { account: Account; onClose: () 
   const [state, formAction] = useFormState(callSetPassword, initialState);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="card max-h-full w-full max-w-sm overflow-y-auto p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-900">Đổi mật khẩu</h3>
-        <p className="mb-4 text-sm text-slate-500">{account.ho_ten}</p>
-        <form
-          action={formAction}
-          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
-          className="space-y-4"
-        >
-          <input type="hidden" name="account_type" value={account.role} />
-          <input type="hidden" name="account_id" value={account.id} />
-          <div>
-            <label className="label">Mật khẩu mới</label>
-            <input name="new_password" type="password" required minLength={6} className="input" />
-          </div>
-          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Đóng
-            </button>
-            <SubmitBtn label="Lưu mật khẩu" pendingLabel="Đang lưu..." />
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title="Đổi mật khẩu" subtitle={account.ho_ten} onClose={onClose}>
+      <form
+        action={formAction}
+        onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+        className="space-y-4"
+      >
+        <input type="hidden" name="account_type" value={account.role} />
+        <input type="hidden" name="account_id" value={account.id} />
+        <div>
+          <label className="label">Mật khẩu mới</label>
+          <input name="new_password" type="password" required minLength={6} className="input" />
+        </div>
+        {state?.error && <p className="alert-error">{state.error}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Đóng
+          </button>
+          <SubmitBtn label="Lưu mật khẩu" pendingLabel="Đang lưu..." />
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -161,37 +157,36 @@ function ChangeRoleModal({ account, onClose }: { account: Account; onClose: () =
   const toRole: AccountRole = account.role === "sup" ? "hrbp" : "sup";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="card max-h-full w-full max-w-sm overflow-y-auto p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-900">Đổi vai trò</h3>
-        <p className="mb-4 text-sm text-slate-500">
-          {account.ho_ten} — hiện là <b>{account.role === "sup" ? "Sup" : "HRBP"}</b>, chuyển thành{" "}
-          <b>{toRole === "sup" ? "Sup" : "HRBP"}</b>
-        </p>
-        <form
-          action={formAction}
-          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
-          className="space-y-4"
-        >
-          <input type="hidden" name="account_id" value={account.id} />
-          <input type="hidden" name="from_role" value={account.role} />
-          <input type="hidden" name="to_role" value={toRole} />
-          {toRole === "sup" && (
-            <div>
-              <label className="label">Chọn Ca phụ trách (bắt buộc)</label>
-              <CaCheckboxes />
-            </div>
-          )}
-          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Đóng
-            </button>
-            <SubmitBtn label="Xác nhận đổi vai trò" pendingLabel="Đang đổi..." />
+    <Modal
+      title="Đổi vai trò"
+      subtitle={`${account.ho_ten} — hiện là ${account.role === "sup" ? "Sup" : "HRBP"}, chuyển thành ${
+        toRole === "sup" ? "Sup" : "HRBP"
+      }`}
+      onClose={onClose}
+    >
+      <form
+        action={formAction}
+        onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+        className="space-y-4"
+      >
+        <input type="hidden" name="account_id" value={account.id} />
+        <input type="hidden" name="from_role" value={account.role} />
+        <input type="hidden" name="to_role" value={toRole} />
+        {toRole === "sup" && (
+          <div>
+            <label className="label">Chọn Ca phụ trách (bắt buộc)</label>
+            <CaCheckboxes />
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+        {state?.error && <p className="alert-error">{state.error}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Đóng
+          </button>
+          <SubmitBtn label="Xác nhận đổi vai trò" pendingLabel="Đang đổi..." />
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -204,27 +199,23 @@ function EditCaModal({ account, onClose }: { account: Account; onClose: () => vo
   const [state, formAction] = useFormState(callUpdateCa, initialState);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="card max-h-full w-full max-w-md overflow-y-auto p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-900">Sửa Ca phụ trách</h3>
-        <p className="mb-4 text-sm text-slate-500">{account.ho_ten}</p>
-        <form
-          action={formAction}
-          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
-          className="space-y-4"
-        >
-          <input type="hidden" name="account_id" value={account.id} />
-          <CaCheckboxes defaultValues={account.ca_phu_trach} />
-          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Đóng
-            </button>
-            <SubmitBtn label="Lưu Ca phụ trách" pendingLabel="Đang lưu..." />
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title="Sửa Ca phụ trách" subtitle={account.ho_ten} onClose={onClose} maxWidthClassName="max-w-md">
+      <form
+        action={formAction}
+        onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+        className="space-y-4"
+      >
+        <input type="hidden" name="account_id" value={account.id} />
+        <CaCheckboxes defaultValues={account.ca_phu_trach} />
+        {state?.error && <p className="alert-error">{state.error}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Đóng
+          </button>
+          <SubmitBtn label="Lưu Ca phụ trách" pendingLabel="Đang lưu..." />
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -245,11 +236,7 @@ function DeleteButton({ account }: { account: Account }) {
 
   return (
     <div className="text-right">
-      <button
-        onClick={handleDelete}
-        disabled={isPending}
-        className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-      >
+      <button onClick={handleDelete} disabled={isPending} className="btn-danger">
         Xoá
       </button>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
@@ -266,48 +253,49 @@ function EditEmployeeModal({ employee, onClose }: { employee: Employee; onClose:
   const [state, formAction] = useFormState(callUpdateEmployee, initialState);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="card max-h-full w-full max-w-md overflow-y-auto p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-900">Sửa nhân viên</h3>
-        <p className="mb-4 text-sm text-slate-500">Mã NV hiện tại: {employee.ma_nv}</p>
-        <form
-          action={formAction}
-          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
-          className="space-y-4"
-        >
-          <input type="hidden" name="employee_id" value={employee.id} />
-          <div>
-            <label className="label">Họ tên</label>
-            <input name="ho_ten" defaultValue={employee.ho_ten} required className="input" />
-          </div>
-          <div>
-            <label className="label">Mã NV</label>
-            <input name="ma_nv" defaultValue={employee.ma_nv} required className="input" />
-          </div>
-          <div>
-            <label className="label">Ca làm việc</label>
-            <select name="ca" defaultValue={employee.ca} className="input">
-              {CA_LIST.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Ngày nhận việc</label>
-            <input type="date" name="ngay_nhan_viec" defaultValue={employee.ngay_nhan_viec} className="input" />
-          </div>
-          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Đóng
-            </button>
-            <SubmitBtn label="Lưu thay đổi" pendingLabel="Đang lưu..." />
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal
+      title="Sửa nhân viên"
+      subtitle={`Mã NV hiện tại: ${employee.ma_nv}`}
+      onClose={onClose}
+      maxWidthClassName="max-w-md"
+    >
+      <form
+        action={formAction}
+        onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+        className="space-y-4"
+      >
+        <input type="hidden" name="employee_id" value={employee.id} />
+        <div>
+          <label className="label">Họ tên</label>
+          <input name="ho_ten" defaultValue={employee.ho_ten} required className="input" />
+        </div>
+        <div>
+          <label className="label">Mã NV</label>
+          <input name="ma_nv" defaultValue={employee.ma_nv} required className="input" />
+        </div>
+        <div>
+          <label className="label">Ca làm việc</label>
+          <select name="ca" defaultValue={employee.ca} className="input">
+            {CA_LIST.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label">Ngày nhận việc</label>
+          <input type="date" name="ngay_nhan_viec" defaultValue={employee.ngay_nhan_viec} className="input" />
+        </div>
+        {state?.error && <p className="alert-error">{state.error}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Đóng
+          </button>
+          <SubmitBtn label="Lưu thay đổi" pendingLabel="Đang lưu..." />
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -333,11 +321,7 @@ function DeleteEmployeeButton({ employee }: { employee: Employee }) {
 
   return (
     <div className="text-right">
-      <button
-        onClick={handleDelete}
-        disabled={isPending}
-        className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-      >
+      <button onClick={handleDelete} disabled={isPending} className="btn-danger">
         Xoá
       </button>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
@@ -363,7 +347,7 @@ function MyPasswordCard({ adminId }: { adminId: string }) {
       </div>
       <SubmitBtn label="Lưu" pendingLabel="Đang lưu..." />
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.success && <p className="text-sm text-green-600">Đã đổi mật khẩu.</p>}
+      {state?.success && <p className="text-sm text-green-700">Đã đổi mật khẩu.</p>}
     </form>
   );
 }
@@ -396,32 +380,22 @@ export default function AdminDashboardClient({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto" />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Xin chào, {adminName}</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Quản trị hệ thống — phân quyền, mật khẩu Sup/HRBP và dữ liệu nhân viên.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="badge bg-slate-900 text-white">System Admin</span>
-          <LogoutButton />
-        </div>
-      </header>
+      <DashboardHeader
+        title={`Xin chào, ${adminName}`}
+        subtitle="Quản trị hệ thống — phân quyền, mật khẩu Sup/HRBP và dữ liệu nhân viên."
+        roleBadge={<span className="badge bg-slate-900 text-white">System Admin</span>}
+      />
 
-      <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+      <div className="mb-4 inline-flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
         <button
           onClick={() => setTab("accounts")}
-          className={`rounded-md px-4 py-2 ${tab === "accounts" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
+          className={`tab-pill ${tab === "accounts" ? "tab-pill-active" : ""}`}
         >
           Tài khoản Sup / HRBP
         </button>
         <button
           onClick={() => setTab("employees")}
-          className={`rounded-md px-4 py-2 ${tab === "employees" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
+          className={`tab-pill ${tab === "employees" ? "tab-pill-active" : ""}`}
         >
           Nhân viên ({employees.length})
         </button>
@@ -432,9 +406,9 @@ export default function AdminDashboardClient({
           <MyPasswordCard adminId={adminId} />
           <AddAccountForm />
 
-          <div className="card overflow-x-auto">
+          <div className="table-shell overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead>
                 <tr>
                   <th className="px-4 py-3">Họ tên</th>
                   <th className="px-4 py-3">Email</th>
@@ -478,8 +452,8 @@ export default function AdminDashboardClient({
                 ))}
                 {accounts.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                      Chưa có tài khoản Sup/HRBP nào.
+                    <td colSpan={6}>
+                      <EmptyState title="Chưa có tài khoản Sup/HRBP nào" />
                     </td>
                   </tr>
                 )}
@@ -488,9 +462,9 @@ export default function AdminDashboardClient({
           </div>
         </div>
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="table-shell overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead>
               <tr>
                 <th className="px-4 py-3">Nhân viên</th>
                 <th className="px-4 py-3">Ca</th>
@@ -527,8 +501,8 @@ export default function AdminDashboardClient({
               ))}
               {employees.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                    Chưa có nhân viên nào trong hệ thống.
+                  <td colSpan={6}>
+                    <EmptyState title="Chưa có nhân viên nào trong hệ thống" />
                   </td>
                 </tr>
               )}

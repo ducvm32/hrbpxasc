@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import Modal from "@/components/ui/Modal";
 import { saveAssignmentAction, type ActionResult } from "@/lib/actions";
 import { jobsForCa } from "@/lib/constants";
 import type { Assignment, Employee, Tuan } from "@/lib/types";
@@ -136,78 +137,67 @@ export default function AssignModal({
   const current = assignments.find((a) => a.tuan === tuan);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
-      <div className="card max-h-full w-full max-w-xl overflow-y-auto p-6">
-        <div className="mb-4 flex items-start justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Phân công — {employee.ho_ten}</h3>
-            <p className="text-sm text-slate-500">
-              Mã NV {employee.ma_nv} · {employee.ca}
-            </p>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            ✕
+    <Modal
+      title={`Phân công — ${employee.ho_ten}`}
+      subtitle={`Mã NV ${employee.ma_nv} · ${employee.ca}`}
+      onClose={onClose}
+      maxWidthClassName="max-w-xl"
+    >
+      <div className="mb-4 flex gap-2">
+        {[1, 2, 3].map((w) => (
+          <button
+            key={w}
+            type="button"
+            onClick={() => setTuan(w as Tuan)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition duration-150 ${
+              tuan === w ? "bg-ghn text-white shadow-soft" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Tuần {w}
           </button>
-        </div>
-
-        <div className="mb-4 flex gap-2">
-          {[1, 2, 3].map((w) => (
-            <button
-              key={w}
-              type="button"
-              onClick={() => setTuan(w as Tuan)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                tuan === w ? "bg-ghn text-white" : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              Tuần {w}
-            </button>
-          ))}
-        </div>
-
-        <form
-          action={formAction}
-          key={tuan}
-          onSubmit={() => setTimeout(onClose, 50)}
-          className="space-y-4"
-        >
-          <input type="hidden" name="employee_id" value={employee.id} />
-          <input type="hidden" name="tuan" value={tuan} />
-
-          <div>
-            <label className="label">Người trực tiếp hướng dẫn</label>
-            <input
-              name="nguoi_huong_dan"
-              defaultValue={employee.nguoi_huong_dan ?? ""}
-              className="input"
-              placeholder="Họ tên người kèm cặp"
-            />
-          </div>
-
-          <JobTimePicker tuan={tuan} jobs={jobs} current={current} />
-
-          <div>
-            <label className="label">Ghi chú thêm (Sup)</label>
-            <textarea
-              name="sup_note"
-              defaultValue={current?.sup_note ?? ""}
-              className="input"
-              rows={2}
-            />
-          </div>
-
-          {state?.error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
-          )}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Đóng
-            </button>
-            <SaveButton />
-          </div>
-        </form>
+        ))}
       </div>
-    </div>
+
+      <form
+        action={formAction}
+        key={tuan}
+        onSubmit={() => setTimeout(onClose, 50)}
+        className="space-y-4"
+      >
+        <input type="hidden" name="employee_id" value={employee.id} />
+        <input type="hidden" name="tuan" value={tuan} />
+
+        <div>
+          <label className="label">Người trực tiếp hướng dẫn</label>
+          <input
+            name="nguoi_huong_dan"
+            defaultValue={employee.nguoi_huong_dan ?? ""}
+            className="input"
+            placeholder="Họ tên người kèm cặp"
+          />
+        </div>
+
+        <JobTimePicker tuan={tuan} jobs={jobs} current={current} />
+
+        <div>
+          <label className="label">Ghi chú thêm (Sup)</label>
+          <textarea
+            name="sup_note"
+            defaultValue={current?.sup_note ?? ""}
+            className="input"
+            rows={2}
+          />
+        </div>
+
+        {state?.error && <p className="alert-error">{state.error}</p>}
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Đóng
+          </button>
+          <SaveButton />
+        </div>
+      </form>
+    </Modal>
   );
 }

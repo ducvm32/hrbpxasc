@@ -30,25 +30,25 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="mb-6 flex flex-col items-center gap-2">
+      <div className="mb-6 flex flex-col items-center gap-2 lg:hidden">
         <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-12 w-auto" />
         <p className="text-xs font-medium uppercase tracking-wide text-ghn">GHN Onboarding</p>
       </div>
 
-      <div className="card p-6">
+      <div className="card p-6 sm:p-8">
         <h1 className="mb-1 text-center text-lg font-semibold text-slate-900">
           Đăng nhập hệ thống Gắn NV &amp; Đánh giá Onboarding
         </h1>
-        <p className="mb-5 text-center text-sm text-slate-500">
+        <p className="mb-6 text-center text-sm text-slate-500">
           Gắn nhân viên mới, phân công kèm cặp và đánh giá 3 tuần đầu
         </p>
 
-        <div className="mb-5 grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+        <div className="mb-6 grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm font-medium">
           <button
             type="button"
             onClick={() => setMode("nhanvien")}
-            className={`rounded-md py-2 transition ${
-              mode === "nhanvien" ? "bg-white text-ghn shadow" : "text-slate-500"
+            className={`rounded-md py-2 transition duration-150 ${
+              mode === "nhanvien" ? "bg-white text-ghn shadow-soft" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             Nhân Viên
@@ -56,8 +56,8 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => setMode("quantri")}
-            className={`rounded-md py-2 transition ${
-              mode === "quantri" ? "bg-white text-ghn shadow" : "text-slate-500"
+            className={`rounded-md py-2 transition duration-150 ${
+              mode === "quantri" ? "bg-white text-ghn shadow-soft" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             Quản Trị (Sup / HRBP / Admin)
@@ -65,7 +65,7 @@ export default function LoginForm() {
         </div>
 
         {mode === "nhanvien" ? (
-          <form action={empAction} className="space-y-4">
+          <form action={empAction} className="animate-fade-in space-y-4">
             <div>
               <label className="label" htmlFor="ma_nv">
                 Mã nhân viên
@@ -79,13 +79,11 @@ export default function LoginForm() {
                 required
               />
             </div>
-            {empState?.error && (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{empState.error}</p>
-            )}
+            {empState?.error && <p className="alert-error">{empState.error}</p>}
             <SubmitButton label="Đăng Nhập" />
           </form>
         ) : (
-          <form action={adminAction} className="space-y-4">
+          <form action={adminAction} className="animate-fade-in space-y-4">
             <div>
               <label className="label" htmlFor="email">
                 Tài khoản (email @ghn.vn)
@@ -113,9 +111,7 @@ export default function LoginForm() {
                 required
               />
             </div>
-            {adminState?.error && (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{adminState.error}</p>
-            )}
+            {adminState?.error && <p className="alert-error">{adminState.error}</p>}
             <SubmitButton label="Đăng Nhập (SSO @ghn.vn)" />
           </form>
         )}

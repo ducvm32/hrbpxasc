@@ -3,9 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DndContext, useDraggable, useDroppable, type DragEndEvent } from "@dnd-kit/core";
-import LogoutButton from "@/components/LogoutButton";
+import DashboardHeader from "@/components/DashboardHeader";
 import AssignModal from "@/components/sup/AssignModal";
 import SupEvalForm from "@/components/sup/SupEvalForm";
+import EmptyState from "@/components/ui/EmptyState";
 import { claimEmployeeAction } from "@/lib/actions";
 import type { Assignment, Employee, SupUser, Tuan } from "@/lib/types";
 import type { employeeProgress } from "@/lib/queries";
@@ -51,29 +52,19 @@ export default function SupDashboardClient({
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto" />
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Xin chào, {sup.ho_ten}</h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Quản lý nhận việc, phân công người hướng dẫn, giao việc theo ngày/tuần và đánh giá cuối ca.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-medium text-slate-800">{sup.ho_ten}</p>
-              <span className="badge bg-slate-100 text-slate-600">
-                Supervisor (Team {sup.ca_phu_trach.join(" / ")})
-              </span>
-            </div>
-            <LogoutButton />
-          </div>
-        </header>
+        <DashboardHeader
+          title={`Xin chào, ${sup.ho_ten}`}
+          subtitle="Quản lý nhận việc, phân công người hướng dẫn, giao việc theo ngày/tuần và đánh giá cuối ca."
+          roleBadge={
+            <span className="badge bg-slate-100 text-slate-600">
+              Supervisor (Team {sup.ca_phu_trach.join(" / ")})
+            </span>
+          }
+        />
 
-        <div className="mb-6 inline-flex items-center gap-1 rounded-full bg-ghn-50 px-3 py-1 text-xs font-semibold text-ghn-700">
-          ● KPI Giữ Người 14 Ngày
+        <div className="mb-6 inline-flex items-center gap-1.5 rounded-full bg-ghn-50 px-3 py-1 text-xs font-semibold text-ghn-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-ghn-500" />
+          KPI Giữ Người 14 Ngày
         </div>
 
         <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -104,17 +95,11 @@ export default function SupDashboardClient({
           </div>
         )}
 
-        <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
-          <button
-            onClick={() => setTab("assign")}
-            className={`rounded-md px-4 py-2 ${tab === "assign" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
-          >
+        <div className="mb-4 inline-flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+          <button onClick={() => setTab("assign")} className={`tab-pill ${tab === "assign" ? "tab-pill-active" : ""}`}>
             Danh sách &amp; Phân công 14 ngày
           </button>
-          <button
-            onClick={() => setTab("eval")}
-            className={`rounded-md px-4 py-2 ${tab === "eval" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
-          >
+          <button onClick={() => setTab("eval")} className={`tab-pill ${tab === "eval" ? "tab-pill-active" : ""}`}>
             Form đánh giá cuối ca
           </button>
         </div>
@@ -123,9 +108,9 @@ export default function SupDashboardClient({
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <TeamDropZone>
-                <div className="card overflow-x-auto">
+                <div className="table-shell overflow-x-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                    <thead>
                       <tr>
                         <th className="px-4 py-3">Nhân viên</th>
                         <th className="px-4 py-3">Ca</th>
@@ -138,8 +123,11 @@ export default function SupDashboardClient({
                     <tbody className="divide-y divide-slate-100">
                       {team.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                            Chưa có nhân viên trong team. Kéo thả hoặc bấm "Nhận" từ POOL bên phải.
+                          <td colSpan={6}>
+                            <EmptyState
+                              title="Chưa có nhân viên trong team"
+                              description='Kéo thả hoặc bấm "Nhận" từ POOL bên phải.'
+                            />
                           </td>
                         </tr>
                       )}
@@ -178,12 +166,12 @@ export default function SupDashboardClient({
             </div>
 
             <div>
-              <h2 className="mb-2 text-sm font-semibold text-slate-600">
-                POOL — NV mới chờ nhận ({pool.length})
-              </h2>
+              <h2 className="section-title">POOL — NV mới chờ nhận ({pool.length})</h2>
               <div className="space-y-2">
                 {pool.length === 0 && (
-                  <p className="card p-4 text-sm text-slate-400">Không có nhân viên chờ nhận.</p>
+                  <div className="card">
+                    <EmptyState title="Không có nhân viên chờ nhận" />
+                  </div>
                 )}
                 {pool.map((e) => (
                   <PoolCard key={e.id} employee={e} onClaim={() => claim(e.id)} pending={isPending} />
@@ -194,7 +182,9 @@ export default function SupDashboardClient({
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {team.length === 0 && (
-              <p className="card p-4 text-sm text-slate-400">Chưa có nhân viên trong team để đánh giá.</p>
+              <div className="card md:col-span-2">
+                <EmptyState title="Chưa có nhân viên trong team để đánh giá" />
+              </div>
             )}
             {team.map((e) => {
               const p = progressByEmployee[e.id];
@@ -225,7 +215,7 @@ export default function SupDashboardClient({
 
 function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`card p-4 ${highlight ? "border-ghn-200 bg-ghn-50" : ""}`}>
+    <div className={`card card-interactive p-4 ${highlight ? "border-ghn-200 bg-ghn-50" : ""}`}>
       <p className="text-sm text-slate-500">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${highlight ? "text-ghn-700" : "text-slate-900"}`}>{value}</p>
     </div>

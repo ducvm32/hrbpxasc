@@ -37,10 +37,19 @@ function RadioQuestion({
   return (
     <div>
       <label className="label">{question}</label>
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         {options.map((o) => (
-          <label key={o.value} className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="radio" name={name} value={o.value} required className="h-4 w-4 border-slate-300" />
+          <label
+            key={o.value}
+            className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition duration-150 has-[:checked]:border-ghn has-[:checked]:bg-ghn-50 has-[:checked]:text-ghn-700 hover:bg-slate-50"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              required
+              className="h-4 w-4 border-slate-300 text-ghn focus:ring-ghn/30"
+            />
             {o.label}
           </label>
         ))}
@@ -64,7 +73,7 @@ function StarRating({ name }: { name: string }) {
             onClick={() => setValue(star)}
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
-            className="text-2xl leading-none"
+            className="text-2xl leading-none transition-transform duration-100 hover:scale-110"
             aria-label={`${star} sao`}
           >
             <span className={(hover || value) >= star ? "text-ghn-500" : "text-slate-300"}>★</span>
@@ -148,9 +157,7 @@ export default function SelfEvalForm({
         riêng của bạn. Hãy an tâm chia sẻ trung thực nhé!
       </p>
 
-      {state?.error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
-      )}
+      {state?.error && <p className="alert-error">{state.error}</p>}
 
       <SubmitBtn />
     </form>

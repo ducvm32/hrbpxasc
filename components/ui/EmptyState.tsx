@@ -1,0 +1,17 @@
+import { IconInbox } from "@/components/ui/icons";
+
+export default function EmptyState({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+      <IconInbox className="h-9 w-9 text-slate-300" />
+      <p className="text-sm font-medium text-slate-500">{title}</p>
+      {description && <p className="max-w-xs text-xs text-slate-400">{description}</p>}
+    </div>
+  );
+}

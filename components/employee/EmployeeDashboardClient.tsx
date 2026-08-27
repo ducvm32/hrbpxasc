@@ -1,6 +1,6 @@
 "use client";
 
-import LogoutButton from "@/components/LogoutButton";
+import DashboardHeader from "@/components/DashboardHeader";
 import SelfEvalForm from "@/components/employee/SelfEvalForm";
 import { jobMota } from "@/lib/constants";
 import type { Assignment, Employee, SelfEvaluation, SupUser } from "@/lib/types";
@@ -29,18 +29,10 @@ export default function EmployeeDashboardClient({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-6 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto" />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Xin chào, {employee.ho_ten}</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Mã NV {employee.ma_nv} · {employee.ca} · Ngày nhận việc {employee.ngay_nhan_viec}
-            </p>
-          </div>
-        </div>
-        <LogoutButton />
-      </header>
+      <DashboardHeader
+        title={`Xin chào, ${employee.ho_ten}`}
+        subtitle={`Mã NV ${employee.ma_nv} · ${employee.ca} · Ngày nhận việc ${employee.ngay_nhan_viec}`}
+      />
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <InfoCard label="Đang ở" value={`Ngày ${Math.max(progress.days, 1)} · Tuần ${progress.dueWeek || 1}`} />

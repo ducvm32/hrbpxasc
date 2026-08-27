@@ -70,14 +70,8 @@ export default function AddEmployeeForm({ today }: { today: string }) {
       </div>
 
       <div className="sm:col-span-2 lg:col-span-5">
-        {state?.error && (
-          <p className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
-        )}
-        {state?.success && (
-          <p className="mb-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-600">
-            Đã thêm nhân viên mới vào POOL.
-          </p>
-        )}
+        {state?.error && <p className="alert-error mb-2">{state.error}</p>}
+        {state?.success && <p className="alert-success mb-2">Đã thêm nhân viên mới vào POOL.</p>}
         <SubmitBtn />
       </div>
     </form>

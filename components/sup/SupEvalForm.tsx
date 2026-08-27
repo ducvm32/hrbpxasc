@@ -92,8 +92,12 @@ export default function SupEvalForm({
           <input type="hidden" name="employee_id" value={employee.id} />
           <input type="hidden" name="tuan" value={allowedWeekNum} />
 
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="lam_dung_cong_viec" className="h-4 w-4 rounded border-slate-300" />
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition duration-150 has-[:checked]:border-ghn has-[:checked]:bg-ghn-50 has-[:checked]:text-ghn-700 hover:bg-slate-50">
+            <input
+              type="checkbox"
+              name="lam_dung_cong_viec"
+              className="h-4 w-4 rounded border-slate-300 text-ghn focus:ring-ghn/30"
+            />
             Nhân viên có thực hiện đúng công việc được phân công
           </label>
 
@@ -112,9 +116,7 @@ export default function SupEvalForm({
             <input type="file" name="anh" accept="image/*" multiple className="text-sm" />
           </div>
 
-          {state?.error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
-          )}
+          {state?.error && <p className="alert-error">{state.error}</p>}
 
           <div className="flex justify-end">
             <SubmitBtn />
