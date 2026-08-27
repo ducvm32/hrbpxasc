@@ -1,0 +1,546 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useFormState, useFormStatus } from "react-dom";
+import LogoutButton from "@/components/LogoutButton";
+import {
+  createAccountAction,
+  setPasswordAction,
+  changeRoleAction,
+  updateSupCaAction,
+  deleteAccountAction,
+  updateEmployeeAction,
+  deleteEmployeeAction,
+  type ActionResult,
+} from "@/lib/actions";
+import { CA_LIST } from "@/lib/constants";
+import type { Employee, HrbpUser, SupUser } from "@/lib/types";
+
+type AccountRole = "sup" | "hrbp";
+type Account = { id: string; ho_ten: string; email: string; role: AccountRole; ca_phu_trach?: string[] };
+
+const initialState: ActionResult = {};
+
+function CaCheckboxes({ defaultValues = [] as string[] }: { defaultValues?: string[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
+      {CA_LIST.map((ca) => (
+        <label key={ca} className="flex items-center gap-1.5 text-xs text-slate-700">
+          <input
+            type="checkbox"
+            name="ca_phu_trach"
+            value={ca}
+            defaultChecked={defaultValues.includes(ca)}
+            className="h-3.5 w-3.5 rounded border-slate-300"
+          />
+          {ca}
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function SubmitBtn({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" className="btn-primary" disabled={pending}>
+      {pending ? pendingLabel : label}
+    </button>
+  );
+}
+
+async function callCreate(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  return (await createAccountAction(formData)) ?? {};
+}
+
+function AddAccountForm() {
+  const router = useRouter();
+  const [role, setRole] = useState<AccountRole>("sup");
+  const [state, formAction] = useFormState(callCreate, initialState);
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={() => setTimeout(() => router.refresh(), 300)}
+      className="card space-y-4 p-4"
+    >
+      <h2 className="font-semibold text-slate-800">Thêm tài khoản Sup / HRBP mới</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label className="label">Vai trò</label>
+          <select
+            name="role"
+            className="input"
+            value={role}
+            onChange={(e) => setRole(e.target.value as AccountRole)}
+          >
+            <option value="sup">Sup (Quản lý)</option>
+            <option value="hrbp">HRBP</option>
+          </select>
+        </div>
+        <div>
+          <label className="label">Họ tên</label>
+          <input name="ho_ten" required className="input" placeholder="Nguyễn Văn A" />
+        </div>
+        <div>
+          <label className="label">Mã NV / ID đăng nhập</label>
+          <input name="id" required className="input" placeholder="3099999" />
+        </div>
+        <div>
+          <label className="label">Email (@ghn.vn)</label>
+          <input name="email" type="email" required className="input" placeholder="ten@ghn.vn" />
+        </div>
+        <div className="sm:col-span-2 lg:col-span-2">
+          <label className="label">Mật khẩu ban đầu</label>
+          <input name="password" type="password" required minLength={6} className="input" />
+        </div>
+      </div>
+
+      {role === "sup" && (
+        <div>
+          <label className="label">Ca phụ trách</label>
+          <CaCheckboxes />
+        </div>
+      )}
+
+      {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
+      {state?.success && (
+        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-600">Đã tạo tài khoản mới.</p>
+      )}
+
+      <SubmitBtn label="Tạo tài khoản" pendingLabel="Đang tạo..." />
+    </form>
+  );
+}
+
+async function callSetPassword(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  return (await setPasswordAction(formData)) ?? {};
+}
+
+function SetPasswordModal({ account, onClose }: { account: Account; onClose: () => void }) {
+  const router = useRouter();
+  const [state, formAction] = useFormState(callSetPassword, initialState);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
+      <div className="card max-h-full w-full max-w-sm overflow-y-auto p-6">
+        <h3 className="mb-1 text-lg font-semibold text-slate-900">Đổi mật khẩu</h3>
+        <p className="mb-4 text-sm text-slate-500">{account.ho_ten}</p>
+        <form
+          action={formAction}
+          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+          className="space-y-4"
+        >
+          <input type="hidden" name="account_type" value={account.role} />
+          <input type="hidden" name="account_id" value={account.id} />
+          <div>
+            <label className="label">Mật khẩu mới</label>
+            <input name="new_password" type="password" required minLength={6} className="input" />
+          </div>
+          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Đóng
+            </button>
+            <SubmitBtn label="Lưu mật khẩu" pendingLabel="Đang lưu..." />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+async function callChangeRole(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  return (await changeRoleAction(formData)) ?? {};
+}
+
+function ChangeRoleModal({ account, onClose }: { account: Account; onClose: () => void }) {
+  const router = useRouter();
+  const [state, formAction] = useFormState(callChangeRole, initialState);
+  const toRole: AccountRole = account.role === "sup" ? "hrbp" : "sup";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
+      <div className="card max-h-full w-full max-w-sm overflow-y-auto p-6">
+        <h3 className="mb-1 text-lg font-semibold text-slate-900">Đổi vai trò</h3>
+        <p className="mb-4 text-sm text-slate-500">
+          {account.ho_ten} — hiện là <b>{account.role === "sup" ? "Sup" : "HRBP"}</b>, chuyển thành{" "}
+          <b>{toRole === "sup" ? "Sup" : "HRBP"}</b>
+        </p>
+        <form
+          action={formAction}
+          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+          className="space-y-4"
+        >
+          <input type="hidden" name="account_id" value={account.id} />
+          <input type="hidden" name="from_role" value={account.role} />
+          <input type="hidden" name="to_role" value={toRole} />
+          {toRole === "sup" && (
+            <div>
+              <label className="label">Chọn Ca phụ trách (bắt buộc)</label>
+              <CaCheckboxes />
+            </div>
+          )}
+          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Đóng
+            </button>
+            <SubmitBtn label="Xác nhận đổi vai trò" pendingLabel="Đang đổi..." />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+async function callUpdateCa(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  return (await updateSupCaAction(formData)) ?? {};
+}
+
+function EditCaModal({ account, onClose }: { account: Account; onClose: () => void }) {
+  const router = useRouter();
+  const [state, formAction] = useFormState(callUpdateCa, initialState);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
+      <div className="card max-h-full w-full max-w-md overflow-y-auto p-6">
+        <h3 className="mb-1 text-lg font-semibold text-slate-900">Sửa Ca phụ trách</h3>
+        <p className="mb-4 text-sm text-slate-500">{account.ho_ten}</p>
+        <form
+          action={formAction}
+          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+          className="space-y-4"
+        >
+          <input type="hidden" name="account_id" value={account.id} />
+          <CaCheckboxes defaultValues={account.ca_phu_trach} />
+          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Đóng
+            </button>
+            <SubmitBtn label="Lưu Ca phụ trách" pendingLabel="Đang lưu..." />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DeleteButton({ account }: { account: Account }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleDelete() {
+    if (!confirm(`Xoá tài khoản "${account.ho_ten}"? Hành động này không thể hoàn tác.`)) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await deleteAccountAction(account.id, account.role);
+      if (res?.error) setError(res.error);
+      else router.refresh();
+    });
+  }
+
+  return (
+    <div className="text-right">
+      <button
+        onClick={handleDelete}
+        disabled={isPending}
+        className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+      >
+        Xoá
+      </button>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+async function callUpdateEmployee(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  return (await updateEmployeeAction(formData)) ?? {};
+}
+
+function EditEmployeeModal({ employee, onClose }: { employee: Employee; onClose: () => void }) {
+  const router = useRouter();
+  const [state, formAction] = useFormState(callUpdateEmployee, initialState);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8">
+      <div className="card max-h-full w-full max-w-md overflow-y-auto p-6">
+        <h3 className="mb-1 text-lg font-semibold text-slate-900">Sửa nhân viên</h3>
+        <p className="mb-4 text-sm text-slate-500">Mã NV hiện tại: {employee.ma_nv}</p>
+        <form
+          action={formAction}
+          onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
+          className="space-y-4"
+        >
+          <input type="hidden" name="employee_id" value={employee.id} />
+          <div>
+            <label className="label">Họ tên</label>
+            <input name="ho_ten" defaultValue={employee.ho_ten} required className="input" />
+          </div>
+          <div>
+            <label className="label">Mã NV</label>
+            <input name="ma_nv" defaultValue={employee.ma_nv} required className="input" />
+          </div>
+          <div>
+            <label className="label">Ca làm việc</label>
+            <select name="ca" defaultValue={employee.ca} className="input">
+              {CA_LIST.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Ngày nhận việc</label>
+            <input type="date" name="ngay_nhan_viec" defaultValue={employee.ngay_nhan_viec} className="input" />
+          </div>
+          {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Đóng
+            </button>
+            <SubmitBtn label="Lưu thay đổi" pendingLabel="Đang lưu..." />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DeleteEmployeeButton({ employee }: { employee: Employee }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleDelete() {
+    if (
+      !confirm(
+        `Xoá nhân viên "${employee.ho_ten}" (${employee.ma_nv})? Toàn bộ phân công và đánh giá liên quan sẽ bị xoá theo. Hành động này không thể hoàn tác.`
+      )
+    )
+      return;
+    setError(null);
+    startTransition(async () => {
+      const res = await deleteEmployeeAction(employee.id);
+      if (res?.error) setError(res.error);
+      else router.refresh();
+    });
+  }
+
+  return (
+    <div className="text-right">
+      <button
+        onClick={handleDelete}
+        disabled={isPending}
+        className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+      >
+        Xoá
+      </button>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function MyPasswordCard({ adminId }: { adminId: string }) {
+  const router = useRouter();
+  const [state, formAction] = useFormState(callSetPassword, initialState);
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={() => setTimeout(() => router.refresh(), 300)}
+      className="card flex flex-wrap items-end gap-3 p-4"
+    >
+      <input type="hidden" name="account_type" value="admin" />
+      <input type="hidden" name="account_id" value={adminId} />
+      <div>
+        <label className="label">Đổi mật khẩu Admin của tôi</label>
+        <input name="new_password" type="password" required minLength={6} className="input w-56" />
+      </div>
+      <SubmitBtn label="Lưu" pendingLabel="Đang lưu..." />
+      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.success && <p className="text-sm text-green-600">Đã đổi mật khẩu.</p>}
+    </form>
+  );
+}
+
+export default function AdminDashboardClient({
+  adminId,
+  adminName,
+  supUsers,
+  hrbpUsers,
+  employees,
+}: {
+  adminId: string;
+  adminName: string;
+  supUsers: SupUser[];
+  hrbpUsers: HrbpUser[];
+  employees: Employee[];
+}) {
+  const accounts: Account[] = [
+    ...supUsers.map((s) => ({ id: s.id, ho_ten: s.ho_ten, email: s.email, role: "sup" as const, ca_phu_trach: s.ca_phu_trach })),
+    ...hrbpUsers.map((h) => ({ id: h.id, ho_ten: h.ho_ten, email: h.email, role: "hrbp" as const })),
+  ].sort((a, b) => a.ho_ten.localeCompare(b.ho_ten, "vi"));
+
+  const supById = new Map(supUsers.map((s) => [s.id, s]));
+
+  const [tab, setTab] = useState<"accounts" | "employees">("accounts");
+  const [passwordTarget, setPasswordTarget] = useState<Account | null>(null);
+  const [roleTarget, setRoleTarget] = useState<Account | null>(null);
+  const [caTarget, setCaTarget] = useState<Account | null>(null);
+  const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
+
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto" />
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Xin chào, {adminName}</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Quản trị hệ thống — phân quyền, mật khẩu Sup/HRBP và dữ liệu nhân viên.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="badge bg-slate-900 text-white">System Admin</span>
+          <LogoutButton />
+        </div>
+      </header>
+
+      <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+        <button
+          onClick={() => setTab("accounts")}
+          className={`rounded-md px-4 py-2 ${tab === "accounts" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
+        >
+          Tài khoản Sup / HRBP
+        </button>
+        <button
+          onClick={() => setTab("employees")}
+          className={`rounded-md px-4 py-2 ${tab === "employees" ? "bg-white text-ghn shadow" : "text-slate-500"}`}
+        >
+          Nhân viên ({employees.length})
+        </button>
+      </div>
+
+      {tab === "accounts" ? (
+        <div className="space-y-6">
+          <MyPasswordCard adminId={adminId} />
+          <AddAccountForm />
+
+          <div className="card overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Họ tên</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Mã / ID</th>
+                  <th className="px-4 py-3">Vai trò</th>
+                  <th className="px-4 py-3">Ca phụ trách</th>
+                  <th className="px-4 py-3 text-right">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {accounts.map((a) => (
+                  <tr key={`${a.role}-${a.id}`}>
+                    <td className="px-4 py-3 font-medium text-slate-800">{a.ho_ten}</td>
+                    <td className="px-4 py-3">{a.email}</td>
+                    <td className="px-4 py-3 text-slate-500">{a.id}</td>
+                    <td className="px-4 py-3">
+                      <span className={`badge ${a.role === "sup" ? "bg-ghn-50 text-ghn-700" : "bg-slate-100 text-slate-600"}`}>
+                        {a.role === "sup" ? "Sup" : "HRBP"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-500">
+                      {a.role === "sup" ? a.ca_phu_trach?.join(", ") : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <button onClick={() => setPasswordTarget(a)} className="btn-secondary text-xs">
+                          Đổi mật khẩu
+                        </button>
+                        <button onClick={() => setRoleTarget(a)} className="btn-secondary text-xs">
+                          Đổi vai trò
+                        </button>
+                        {a.role === "sup" && (
+                          <button onClick={() => setCaTarget(a)} className="btn-secondary text-xs">
+                            Sửa Ca
+                          </button>
+                        )}
+                        <DeleteButton account={a} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {accounts.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                      Chưa có tài khoản Sup/HRBP nào.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="card overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-3">Nhân viên</th>
+                <th className="px-4 py-3">Ca</th>
+                <th className="px-4 py-3">Ngày nhận việc</th>
+                <th className="px-4 py-3">Sup phụ trách</th>
+                <th className="px-4 py-3">KPI 14N</th>
+                <th className="px-4 py-3 text-right">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {employees.map((e) => (
+                <tr key={e.id}>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-800">{e.ho_ten}</p>
+                    <p className="text-xs text-slate-500">{e.ma_nv}</p>
+                  </td>
+                  <td className="px-4 py-3">{e.ca}</td>
+                  <td className="px-4 py-3">{e.ngay_nhan_viec}</td>
+                  <td className="px-4 py-3">
+                    {e.sup_id ? supById.get(e.sup_id)?.ho_ten ?? "—" : <span className="badge bg-orange-100 text-ghn-700">POOL</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    {e.la_kpi_14ngay && <span className="badge bg-ghn-50 text-ghn-700">Có</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button onClick={() => setEditEmployee(e)} className="btn-secondary text-xs">
+                        Sửa
+                      </button>
+                      <DeleteEmployeeButton employee={e} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {employees.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                    Chưa có nhân viên nào trong hệ thống.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {passwordTarget && <SetPasswordModal account={passwordTarget} onClose={() => setPasswordTarget(null)} />}
+      {roleTarget && <ChangeRoleModal account={roleTarget} onClose={() => setRoleTarget(null)} />}
+      {caTarget && <EditCaModal account={caTarget} onClose={() => setCaTarget(null)} />}
+      {editEmployee && <EditEmployeeModal employee={editEmployee} onClose={() => setEditEmployee(null)} />}
+    </main>
+  );
+}

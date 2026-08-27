@@ -1,0 +1,18 @@
+services:
+  ghn-onboarding:
+    build: .
+    container_name: ghn-onboarding-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - SESSION_SECRET=${SESSION_SECRET:-ghn-onboarding-change-this-secret}
+    volumes:
+      - ghn_data:/app/data
+      - ghn_uploads:/app/public/uploads
+
+volumes:
+  ghn_data:
+  ghn_uploads:
