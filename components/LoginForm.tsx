@@ -30,7 +30,7 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="mb-6 flex flex-col items-center gap-2 lg:hidden">
+      <div className="mb-6 flex flex-col items-center gap-2">
         <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-12 w-auto" />
         <p className="text-xs font-medium uppercase tracking-wide text-ghn">GHN Onboarding</p>
       </div>
