@@ -112,7 +112,7 @@ export default function LoginForm() {
               />
             </div>
             {adminState?.error && <p className="alert-error">{adminState.error}</p>}
-            <SubmitButton label="Đăng Nhập (SSO @ghn.vn)" />
+            <SubmitButton label="Đăng Nhập" />
           </form>
         )}
       </div>
