@@ -8,7 +8,6 @@ import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import {
   createAccountAction,
-  setPasswordAction,
   changeRoleAction,
   updateSupCaAction,
   deleteAccountAction,
@@ -93,10 +92,6 @@ function AddAccountForm() {
           <label className="label">Email (@ghn.vn)</label>
           <input name="email" type="email" required className="input" placeholder="ten@ghn.vn" />
         </div>
-        <div className="sm:col-span-2 lg:col-span-2">
-          <label className="label">Mật khẩu ban đầu</label>
-          <input name="password" type="password" required minLength={6} className="input" />
-        </div>
       </div>
 
       {role === "sup" && (
@@ -111,39 +106,6 @@ function AddAccountForm() {
 
       <SubmitBtn label="Tạo tài khoản" pendingLabel="Đang tạo..." />
     </form>
-  );
-}
-
-async function callSetPassword(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  return (await setPasswordAction(formData)) ?? {};
-}
-
-function SetPasswordModal({ account, onClose }: { account: Account; onClose: () => void }) {
-  const router = useRouter();
-  const [state, formAction] = useFormState(callSetPassword, initialState);
-
-  return (
-    <Modal title="Đổi mật khẩu" subtitle={account.ho_ten} onClose={onClose}>
-      <form
-        action={formAction}
-        onSubmit={() => setTimeout(() => { router.refresh(); onClose(); }, 300)}
-        className="space-y-4"
-      >
-        <input type="hidden" name="account_type" value={account.role} />
-        <input type="hidden" name="account_id" value={account.id} />
-        <div>
-          <label className="label">Mật khẩu mới</label>
-          <input name="new_password" type="password" required minLength={6} className="input" />
-        </div>
-        {state?.error && <p className="alert-error">{state.error}</p>}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn-secondary">
-            Đóng
-          </button>
-          <SubmitBtn label="Lưu mật khẩu" pendingLabel="Đang lưu..." />
-        </div>
-      </form>
-    </Modal>
   );
 }
 
@@ -329,37 +291,12 @@ function DeleteEmployeeButton({ employee }: { employee: Employee }) {
   );
 }
 
-function MyPasswordCard({ adminId }: { adminId: string }) {
-  const router = useRouter();
-  const [state, formAction] = useFormState(callSetPassword, initialState);
-
-  return (
-    <form
-      action={formAction}
-      onSubmit={() => setTimeout(() => router.refresh(), 300)}
-      className="card flex flex-wrap items-end gap-3 p-4"
-    >
-      <input type="hidden" name="account_type" value="admin" />
-      <input type="hidden" name="account_id" value={adminId} />
-      <div>
-        <label className="label">Đổi mật khẩu Admin của tôi</label>
-        <input name="new_password" type="password" required minLength={6} className="input w-56" />
-      </div>
-      <SubmitBtn label="Lưu" pendingLabel="Đang lưu..." />
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.success && <p className="text-sm text-green-700">Đã đổi mật khẩu.</p>}
-    </form>
-  );
-}
-
 export default function AdminDashboardClient({
-  adminId,
   adminName,
   supUsers,
   hrbpUsers,
   employees,
 }: {
-  adminId: string;
   adminName: string;
   supUsers: SupUser[];
   hrbpUsers: HrbpUser[];
@@ -370,10 +307,7 @@ export default function AdminDashboardClient({
     ...hrbpUsers.map((h) => ({ id: h.id, ho_ten: h.ho_ten, email: h.email, role: "hrbp" as const })),
   ].sort((a, b) => a.ho_ten.localeCompare(b.ho_ten, "vi"));
 
-  const supById = new Map(supUsers.map((s) => [s.id, s]));
-
   const [tab, setTab] = useState<"accounts" | "employees">("accounts");
-  const [passwordTarget, setPasswordTarget] = useState<Account | null>(null);
   const [roleTarget, setRoleTarget] = useState<Account | null>(null);
   const [caTarget, setCaTarget] = useState<Account | null>(null);
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
@@ -382,7 +316,7 @@ export default function AdminDashboardClient({
     <main className="mx-auto max-w-6xl px-4 py-8">
       <DashboardHeader
         title={`Xin chào, ${adminName}`}
-        subtitle="Quản trị hệ thống — phân quyền, mật khẩu Sup/HRBP và dữ liệu nhân viên."
+        subtitle="Quản trị hệ thống — phân quyền và dữ liệu nhân viên."
         roleBadge={<span className="badge bg-slate-900 text-white">System Admin</span>}
       />
 
@@ -403,7 +337,6 @@ export default function AdminDashboardClient({
 
       {tab === "accounts" ? (
         <div className="space-y-6">
-          <MyPasswordCard adminId={adminId} />
           <AddAccountForm />
 
           <div className="table-shell overflow-x-auto">
@@ -434,9 +367,6 @@ export default function AdminDashboardClient({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <button onClick={() => setPasswordTarget(a)} className="btn-secondary text-xs">
-                          Đổi mật khẩu
-                        </button>
                         <button onClick={() => setRoleTarget(a)} className="btn-secondary text-xs">
                           Đổi vai trò
                         </button>
@@ -484,7 +414,14 @@ export default function AdminDashboardClient({
                   <td className="px-4 py-3">{e.ca}</td>
                   <td className="px-4 py-3">{e.ngay_nhan_viec}</td>
                   <td className="px-4 py-3">
-                    {e.sup_id ? supById.get(e.sup_id)?.ho_ten ?? "—" : <span className="badge bg-orange-100 text-ghn-700">POOL</span>}
+                    {(() => {
+                      const names = supUsers.filter((s) => s.ca_phu_trach.includes(e.ca)).map((s) => s.ho_ten);
+                      return names.length > 0 ? (
+                        names.join(", ")
+                      ) : (
+                        <span className="badge bg-orange-100 text-ghn-700">Chưa có Sup</span>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3">
                     {e.la_kpi_14ngay && <span className="badge bg-ghn-50 text-ghn-700">Có</span>}
@@ -511,7 +448,6 @@ export default function AdminDashboardClient({
         </div>
       )}
 
-      {passwordTarget && <SetPasswordModal account={passwordTarget} onClose={() => setPasswordTarget(null)} />}
       {roleTarget && <ChangeRoleModal account={roleTarget} onClose={() => setRoleTarget(null)} />}
       {caTarget && <EditCaModal account={caTarget} onClose={() => setCaTarget(null)} />}
       {editEmployee && <EditEmployeeModal employee={editEmployee} onClose={() => setEditEmployee(null)} />}

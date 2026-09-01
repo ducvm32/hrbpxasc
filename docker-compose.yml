@@ -9,6 +9,14 @@ services:
       - NODE_ENV=production
       - HOSTNAME=0.0.0.0
       - SESSION_SECRET=${SESSION_SECRET:-ghn-onboarding-change-this-secret}
+      # Google OAuth 2.0 — bắt buộc để Admin/Sup/HRBP đăng nhập. Tạo OAuth
+      # client trên Google Cloud Console (APIs & Services > Credentials),
+      # loại "Web application", redirect URI phải khớp SSO_REDIRECT_URI bên dưới.
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
+      # Domain Google Workspace được phép đăng nhập
+      - GOOGLE_HD_DOMAIN=${GOOGLE_HD_DOMAIN:-ghn.vn}
     volumes:
       - ghn_data:/app/data
       - ghn_uploads:/app/public/uploads

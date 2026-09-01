@@ -3,8 +3,7 @@ FROM node:20-alpine AS base
 FROM base AS deps
 WORKDIR /app
 # better-sqlite3 compiles a native addon at install time — Alpine's base
-# image has no compiler toolchain by default (this bit us before with
-# native bcrypt, which is why that dep is bcryptjs instead).
+# image has no compiler toolchain by default.
 RUN apk add --no-cache python3 make g++
 COPY package.json ./
 RUN npm install --no-audit --no-fund

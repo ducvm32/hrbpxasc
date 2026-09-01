@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import bcrypt from "bcryptjs";
 import Database from "better-sqlite3";
 import type {
   AdminUser,
@@ -12,13 +11,7 @@ import type {
   SupEvaluation,
   SupUser,
 } from "./types";
-import {
-  SEED_SUP_USERS,
-  SEED_HRBP_USERS,
-  SEED_ADMIN_USERS,
-  DEMO_ADMIN_PASSWORD,
-  ADMIN_DEFAULT_PASSWORD,
-} from "./constants";
+import { SEED_SUP_USERS, SEED_HRBP_USERS, SEED_ADMIN_USERS } from "./constants";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_FILE = path.join(DATA_DIR, "app.db");
@@ -28,23 +21,20 @@ const SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS admin_users (
     id TEXT PRIMARY KEY,
     ho_ten TEXT NOT NULL,
-    email TEXT NOT NULL,
-    password_hash TEXT NOT NULL
+    email TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS sup_users (
     id TEXT PRIMARY KEY,
     ho_ten TEXT NOT NULL,
     ma_nv TEXT NOT NULL,
     email TEXT NOT NULL,
-    ca_phu_trach TEXT NOT NULL,
-    password_hash TEXT NOT NULL
+    ca_phu_trach TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS hrbp_users (
     id TEXT PRIMARY KEY,
     ho_ten TEXT NOT NULL,
     ma_nv TEXT NOT NULL,
-    email TEXT NOT NULL,
-    password_hash TEXT NOT NULL
+    email TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS employees (
     id TEXT PRIMARY KEY,
@@ -52,7 +42,6 @@ const SCHEMA_SQL = `
     ma_nv TEXT NOT NULL,
     ca TEXT NOT NULL,
     ngay_nhan_viec TEXT NOT NULL,
-    sup_id TEXT,
     nguoi_huong_dan TEXT,
     khu_vuc_line TEXT,
     tuan_hien_tai INTEGER NOT NULL,
@@ -77,6 +66,10 @@ const SCHEMA_SQL = `
     sup_id TEXT NOT NULL,
     tuan INTEGER NOT NULL,
     ngay TEXT NOT NULL,
+    dung_cong_viec TEXT NOT NULL DEFAULT 'dung_100',
+    kha_nang_tiep_thu TEXT NOT NULL DEFAULT 'nhanh',
+    khoi_luong_cong_viec TEXT NOT NULL DEFAULT 'vua_suc',
+    danh_gia_sao INTEGER NOT NULL DEFAULT 3,
     lam_dung_cong_viec INTEGER NOT NULL,
     noi_dung TEXT NOT NULL,
     van_de_phat_sinh TEXT NOT NULL,
@@ -96,7 +89,6 @@ const SCHEMA_SQL = `
     anh_urls TEXT NOT NULL,
     created_at TEXT NOT NULL
   );
-  CREATE INDEX IF NOT EXISTS idx_employees_sup_id ON employees(sup_id);
   CREATE INDEX IF NOT EXISTS idx_assignments_employee_id ON assignments(employee_id);
   CREATE INDEX IF NOT EXISTS idx_sup_evaluations_employee_id ON sup_evaluations(employee_id);
   CREATE INDEX IF NOT EXISTS idx_self_evaluations_employee_id ON self_evaluations(employee_id);
@@ -128,27 +120,23 @@ function persistAll(db: Database.Database, data: DB) {
         "DELETE FROM employees; DELETE FROM assignments; DELETE FROM sup_evaluations; DELETE FROM self_evaluations;"
     );
 
-    const insertAdmin = db.prepare(
-      "INSERT INTO admin_users (id, ho_ten, email, password_hash) VALUES (?,?,?,?)"
-    );
-    for (const a of data.admin_users) insertAdmin.run(a.id, a.ho_ten, a.email, a.password_hash);
+    const insertAdmin = db.prepare("INSERT INTO admin_users (id, ho_ten, email) VALUES (?,?,?)");
+    for (const a of data.admin_users) insertAdmin.run(a.id, a.ho_ten, a.email);
 
     const insertSup = db.prepare(
-      "INSERT INTO sup_users (id, ho_ten, ma_nv, email, ca_phu_trach, password_hash) VALUES (?,?,?,?,?,?)"
+      "INSERT INTO sup_users (id, ho_ten, ma_nv, email, ca_phu_trach) VALUES (?,?,?,?,?)"
     );
     for (const s of data.sup_users) {
-      insertSup.run(s.id, s.ho_ten, s.ma_nv, s.email, JSON.stringify(s.ca_phu_trach), s.password_hash);
+      insertSup.run(s.id, s.ho_ten, s.ma_nv, s.email, JSON.stringify(s.ca_phu_trach));
     }
 
-    const insertHrbp = db.prepare(
-      "INSERT INTO hrbp_users (id, ho_ten, ma_nv, email, password_hash) VALUES (?,?,?,?,?)"
-    );
-    for (const h of data.hrbp_users) insertHrbp.run(h.id, h.ho_ten, h.ma_nv, h.email, h.password_hash);
+    const insertHrbp = db.prepare("INSERT INTO hrbp_users (id, ho_ten, ma_nv, email) VALUES (?,?,?,?)");
+    for (const h of data.hrbp_users) insertHrbp.run(h.id, h.ho_ten, h.ma_nv, h.email);
 
     const insertEmp = db.prepare(
       `INSERT INTO employees
-        (id, ho_ten, ma_nv, ca, ngay_nhan_viec, sup_id, nguoi_huong_dan, khu_vuc_line, tuan_hien_tai, la_kpi_14ngay, created_at, created_by)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+        (id, ho_ten, ma_nv, ca, ngay_nhan_viec, nguoi_huong_dan, khu_vuc_line, tuan_hien_tai, la_kpi_14ngay, created_at, created_by)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
     );
     for (const e of data.employees) {
       insertEmp.run(
@@ -157,7 +145,6 @@ function persistAll(db: Database.Database, data: DB) {
         e.ma_nv,
         e.ca,
         e.ngay_nhan_viec,
-        e.sup_id,
         e.nguoi_huong_dan,
         e.khu_vuc_line,
         e.tuan_hien_tai,
@@ -188,8 +175,8 @@ function persistAll(db: Database.Database, data: DB) {
 
     const insertSupEval = db.prepare(
       `INSERT INTO sup_evaluations
-        (id, employee_id, sup_id, tuan, ngay, lam_dung_cong_viec, noi_dung, van_de_phat_sinh, anh_urls, created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`
+        (id, employee_id, sup_id, tuan, ngay, dung_cong_viec, kha_nang_tiep_thu, khoi_luong_cong_viec, danh_gia_sao, lam_dung_cong_viec, noi_dung, van_de_phat_sinh, anh_urls, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     );
     for (const ev of data.sup_evaluations) {
       insertSupEval.run(
@@ -198,6 +185,10 @@ function persistAll(db: Database.Database, data: DB) {
         ev.sup_id,
         ev.tuan,
         ev.ngay,
+        ev.dung_cong_viec,
+        ev.kha_nang_tiep_thu,
+        ev.khoi_luong_cong_viec,
+        ev.danh_gia_sao,
         ev.lam_dung_cong_viec ? 1 : 0,
         ev.noi_dung,
         ev.van_de_phat_sinh,
@@ -248,9 +239,10 @@ function loadAll(db: Database.Database): DB {
 
 /**
  * Nếu DB SQLite còn trống (lần chạy đầu sau khi nâng cấp từ bản JSON cũ) mà
- * còn file data/db.json cũ trong volume — import nguyên dữ liệu đó sang, giữ
- * đúng password_hash hiện có (không seed lại mật khẩu). Sau khi import xong,
- * đổi tên file cũ thành .migrated để không import lặp lại.
+ * còn file data/db.json cũ trong volume — import nguyên dữ liệu đó sang (mật
+ * khẩu cũ trong file JSON, nếu có, sẽ không được giữ lại — đăng nhập giờ qua
+ * Google OAuth). Sau khi import xong, đổi tên file cũ thành .migrated để
+ * không import lặp lại.
  */
 function migrateFromLegacyJson(db: Database.Database) {
   const hasAnyData =
@@ -280,40 +272,94 @@ function migrateFromLegacyJson(db: Database.Database) {
     );
   }
 
+  // db.json cũ có thể sinh trước khi form đánh giá Sup có thêm các câu hỏi
+  // dung_cong_viec/kha_nang_tiep_thu/khoi_luong_cong_viec/danh_gia_sao — điền
+  // giá trị mặc định hợp lý thay vì bỏ cả bản ghi (khác self_evaluations vì
+  // đây chỉ là dữ liệu bổ sung, không phải dữ liệu lõi).
+  const sanitizedSupEvals = (legacy.sup_evaluations ?? []).map((ev: any) => ({
+    ...ev,
+    dung_cong_viec: ev.dung_cong_viec ?? (ev.lam_dung_cong_viec ? "dung_100" : "khong_ro"),
+    kha_nang_tiep_thu: ev.kha_nang_tiep_thu ?? "nhanh",
+    khoi_luong_cong_viec: ev.khoi_luong_cong_viec ?? "vua_suc",
+    danh_gia_sao: ev.danh_gia_sao ?? 3,
+  }));
+
   persistAll(db, {
     admin_users: legacy.admin_users ?? [],
     sup_users: legacy.sup_users ?? [],
     hrbp_users: legacy.hrbp_users ?? [],
     employees: legacy.employees ?? [],
     assignments: legacy.assignments ?? [],
-    sup_evaluations: legacy.sup_evaluations ?? [],
+    sup_evaluations: sanitizedSupEvals,
     self_evaluations: validSelfEvals,
   });
   fs.renameSync(LEGACY_JSON_FILE, `${LEGACY_JSON_FILE}.migrated`);
 }
 
+/**
+ * Thêm cột mới vào bảng đã tồn tại nếu thiếu — dùng khi nâng cấp schema cho DB
+ * SQLite đã có sẵn dữ liệu (CREATE TABLE IF NOT EXISTS không tự thêm cột mới
+ * vào bảng cũ). `columnDdl` cần có DEFAULT để backfill an toàn cho các dòng cũ.
+ */
+function ensureColumn(db: Database.Database, table: string, column: string, columnDdl: string) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnDdl}`);
+  }
+}
+
+/**
+ * Xoá cột `column` khỏi `table` nếu còn tồn tại — dùng để dọn cột đã bỏ dùng
+ * khỏi các DB SQLite đã triển khai từ trước (volume cũ), vì CREATE TABLE IF
+ * NOT EXISTS không tự xoá cột thừa khỏi bảng cũ.
+ */
+function dropColumnIfExists(db: Database.Database, table: string, column: string) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
+  }
+}
+
+function migrateSchema(db: Database.Database) {
+  // Admin/Sup/HRBP đăng nhập qua Google OAuth (đối chiếu theo email) — cột
+  // password_hash không còn được ghi/đọc ở đâu, xoá luôn khỏi DB cũ.
+  dropColumnIfExists(db, "admin_users", "password_hash");
+  dropColumnIfExists(db, "sup_users", "password_hash");
+  dropColumnIfExists(db, "hrbp_users", "password_hash");
+
+  ensureColumn(db, "sup_evaluations", "dung_cong_viec", "dung_cong_viec TEXT NOT NULL DEFAULT 'dung_100'");
+  ensureColumn(db, "sup_evaluations", "kha_nang_tiep_thu", "kha_nang_tiep_thu TEXT NOT NULL DEFAULT 'nhanh'");
+  ensureColumn(db, "sup_evaluations", "khoi_luong_cong_viec", "khoi_luong_cong_viec TEXT NOT NULL DEFAULT 'vua_suc'");
+  ensureColumn(db, "sup_evaluations", "danh_gia_sao", "danh_gia_sao INTEGER NOT NULL DEFAULT 3");
+
+  // ALTER TABLE ADD COLUMN chỉ nhận DEFAULT hằng số ('dung_100' cho mọi dòng cũ),
+  // không thể tham chiếu cột khác — sửa lại cho đúng với lam_dung_cong_viec=0 cũ.
+  // Đây là tổ hợp mà code hiện tại (submitSupEvaluationAction) không bao giờ tạo
+  // ra nữa nên UPDATE này chỉ chạm vào đúng các dòng còn sót lại từ trước khi
+  // nâng cấp schema, an toàn để chạy lại mỗi lần khởi động.
+  db.exec(
+    `UPDATE sup_evaluations SET dung_cong_viec = 'khong_ro' WHERE dung_cong_viec = 'dung_100' AND lam_dung_cong_viec = 0`
+  );
+}
+
 function seedIfEmpty(db: Database.Database) {
   const adminCount = (db.prepare("SELECT COUNT(*) c FROM admin_users").get() as any).c;
   if (adminCount === 0) {
-    const hash = bcrypt.hashSync(ADMIN_DEFAULT_PASSWORD, 10);
-    const insert = db.prepare("INSERT INTO admin_users (id, ho_ten, email, password_hash) VALUES (?,?,?,?)");
-    for (const a of SEED_ADMIN_USERS) insert.run(a.id, a.ho_ten, a.email, hash);
+    const insert = db.prepare("INSERT INTO admin_users (id, ho_ten, email) VALUES (?,?,?)");
+    for (const a of SEED_ADMIN_USERS) insert.run(a.id, a.ho_ten, a.email);
   }
 
   const supCount = (db.prepare("SELECT COUNT(*) c FROM sup_users").get() as any).c;
   const hrbpCount = (db.prepare("SELECT COUNT(*) c FROM hrbp_users").get() as any).c;
   if (supCount === 0 && hrbpCount === 0) {
-    const hash = bcrypt.hashSync(DEMO_ADMIN_PASSWORD, 10);
     const insertSup = db.prepare(
-      "INSERT INTO sup_users (id, ho_ten, ma_nv, email, ca_phu_trach, password_hash) VALUES (?,?,?,?,?,?)"
+      "INSERT INTO sup_users (id, ho_ten, ma_nv, email, ca_phu_trach) VALUES (?,?,?,?,?)"
     );
     for (const s of SEED_SUP_USERS) {
-      insertSup.run(s.id, s.ho_ten, s.ma_nv, s.email, JSON.stringify(s.ca_phu_trach), hash);
+      insertSup.run(s.id, s.ho_ten, s.ma_nv, s.email, JSON.stringify(s.ca_phu_trach));
     }
-    const insertHrbp = db.prepare(
-      "INSERT INTO hrbp_users (id, ho_ten, ma_nv, email, password_hash) VALUES (?,?,?,?,?)"
-    );
-    for (const h of SEED_HRBP_USERS) insertHrbp.run(h.id, h.ho_ten, h.ma_nv, h.email, hash);
+    const insertHrbp = db.prepare("INSERT INTO hrbp_users (id, ho_ten, ma_nv, email) VALUES (?,?,?,?)");
+    for (const h of SEED_HRBP_USERS) insertHrbp.run(h.id, h.ho_ten, h.ma_nv, h.email);
   }
 }
 
@@ -324,6 +370,7 @@ function getConnection(): Database.Database {
   const db = new Database(DB_FILE);
   db.pragma("journal_mode = WAL");
   db.exec(SCHEMA_SQL);
+  migrateSchema(db);
   migrateFromLegacyJson(db);
   seedIfEmpty(db);
 

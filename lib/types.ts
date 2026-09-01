@@ -6,24 +6,21 @@ export interface SupUser {
   id: string; // ma_nv
   ho_ten: string;
   ma_nv: string;
-  email: string;
+  email: string; // đăng nhập qua Google OAuth, đối chiếu theo email này
   ca_phu_trach: string[];
-  password_hash: string;
 }
 
 export interface HrbpUser {
   id: string;
   ho_ten: string;
   ma_nv: string;
-  email: string;
-  password_hash: string;
+  email: string; // đăng nhập qua Google OAuth, đối chiếu theo email này
 }
 
 export interface AdminUser {
   id: string;
   ho_ten: string;
-  email: string;
-  password_hash: string;
+  email: string; // đăng nhập qua Google OAuth, đối chiếu theo email này
 }
 
 export interface Employee {
@@ -32,7 +29,6 @@ export interface Employee {
   ma_nv: string;
   ca: string;
   ngay_nhan_viec: string; // ISO date (yyyy-MM-dd)
-  sup_id: string | null; // null = still in POOL
   nguoi_huong_dan: string | null;
   khu_vuc_line: string | null;
   tuan_hien_tai: Tuan;
@@ -53,22 +49,29 @@ export interface Assignment {
   updated_at: string;
 }
 
+export type DungCongViec = "dung_100" | "doi_viec_khac" | "khong_ro";
+export type MucDoHuongDan = "tan_tinh" | "it" | "khong_duoc";
+export type KhoiLuongCongViec = "qua_tai" | "vua_suc" | "nhe_nhang";
+export type KhaNangTiepThu = "nhanh" | "can_nhac_lai" | "kho_tiep_thu";
+
 export interface SupEvaluation {
   id: string;
   employee_id: string;
   sup_id: string;
   tuan: Tuan;
   ngay: string; // ISO date, evaluation is saved per-day
+  dung_cong_viec: DungCongViec;
+  kha_nang_tiep_thu: KhaNangTiepThu;
+  khoi_luong_cong_viec: KhoiLuongCongViec; // theo quan sát của Sup, độc lập với tự đánh giá của NV
+  danh_gia_sao: number; // 1-5, Sup đánh giá thái độ & hiệu suất của NV
+  // Giữ lại để tương thích cột NOT NULL cũ trong SQLite — luôn suy ra từ
+  // dung_cong_viec (= true khi "dung_100"), không còn nhập trực tiếp qua UI.
   lam_dung_cong_viec: boolean;
   noi_dung: string;
   van_de_phat_sinh: string;
   anh_urls: string[];
   created_at: string;
 }
-
-export type DungCongViec = "dung_100" | "doi_viec_khac" | "khong_ro";
-export type MucDoHuongDan = "tan_tinh" | "it" | "khong_duoc";
-export type KhoiLuongCongViec = "qua_tai" | "vua_suc" | "nhe_nhang";
 
 export interface SelfEvaluation {
   id: string;

@@ -6,6 +6,7 @@ import type {
   KhoiLuongCongViec,
   MucDoHuongDan,
   SelfEvaluation,
+  SupUser,
   Tuan,
 } from "./types";
 
@@ -13,14 +14,20 @@ export function getSupById(id: string) {
   return readDB().sup_users.find((s) => s.id === id) ?? null;
 }
 
-export function getPoolForCaList(caList: string[]): Employee[] {
-  const db = readDB();
-  return db.employees.filter((e) => !e.sup_id && caList.includes(e.ca));
-}
-
+/** Team của 1 Sup = toàn bộ NV thuộc các Ca mà Sup đó phụ trách — mọi Sup cùng
+ * phụ trách 1 Ca đều quản lý chung NV của ca đó (không còn cơ chế 1 Sup nhận
+ * riêng 1 NV). */
 export function getTeamForSup(supId: string): Employee[] {
   const db = readDB();
-  return db.employees.filter((e) => e.sup_id === supId);
+  const sup = db.sup_users.find((s) => s.id === supId);
+  if (!sup) return [];
+  return db.employees.filter((e) => sup.ca_phu_trach.includes(e.ca));
+}
+
+/** Danh sách các Sup cùng phụ trách 1 Ca — dùng để hiển thị "Sup phụ trách"
+ * cho HRBP/Admin/NV thay vì 1 Sup duy nhất. */
+export function getSupsForCa(ca: string): SupUser[] {
+  return readDB().sup_users.filter((s) => s.ca_phu_trach.includes(ca));
 }
 
 export function getAssignmentsForEmployee(employeeId: string) {

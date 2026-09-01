@@ -13,7 +13,6 @@ export default function AdminPage() {
 
   return (
     <AdminDashboardClient
-      adminId={session.id}
       adminName={session.ho_ten}
       supUsers={supUsers}
       hrbpUsers={hrbpUsers}

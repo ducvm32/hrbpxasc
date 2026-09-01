@@ -2,14 +2,15 @@ import type {
   AdminUser,
   DungCongViec,
   HrbpUser,
+  KhaNangTiepThu,
   KhoiLuongCongViec,
   MucDoHuongDan,
   SupUser,
 } from "./types";
 
-type RawSup = Omit<SupUser, "password_hash">;
-type RawHrbp = Omit<HrbpUser, "password_hash">;
-type RawAdmin = Omit<AdminUser, "password_hash">;
+type RawSup = SupUser;
+type RawHrbp = HrbpUser;
+type RawAdmin = AdminUser;
 
 // Mục 4 — Danh sách Ca làm việc
 export const CA_GAY = "Ca gãy 19h – 24h";
@@ -107,12 +108,7 @@ export function jobMota(ca: string, congViec: string): string | null {
   return jobsForCa(ca).find((j) => j.value === congViec)?.mota ?? null;
 }
 
-// Mật khẩu mặc định lúc khởi tạo lần đầu — nên đổi ngay qua trang /admin.
-export const DEMO_ADMIN_PASSWORD = "ghn@2026";
-export const ADMIN_DEFAULT_PASSWORD = "Admin@2026!";
-
-// Mục 7 — Danh sách Sup & Ca phụ trách (seed data). password_hash được sinh
-// một lần lúc khởi tạo DB (xem lib/db.ts) — sau đó admin có thể đổi qua /admin.
+// Mục 7 — Danh sách Sup & Ca phụ trách (seed data).
 export const SEED_SUP_USERS: RawSup[] = [
   { id: "3153864", ho_ten: "Nguyễn Hà Kiên", ma_nv: "3153864", email: "kiennh@ghn.vn", ca_phu_trach: ["Ca 2 Inout", CA_GAY] },
   { id: "3128923", ho_ten: "Lâm Nguyễn Thành Long", ma_nv: "3128923", email: "longlnt@ghn.vn", ca_phu_trach: ["Ca 1 Sort"] },
@@ -140,7 +136,7 @@ export const SEED_HRBP_USERS: RawHrbp[] = [
 ];
 
 export const SEED_ADMIN_USERS: RawAdmin[] = [
-  { id: "ADMIN001", ho_ten: "System Admin", email: "admin@ghn.vn" },
+  { id: "ADMIN001", ho_ten: "System Admin", email: "ducvm@ghn.vn" },
 ];
 
 // Form tự đánh giá của nhân viên (câu 1-3, mỗi câu chọn 1 trong 3)
@@ -173,3 +169,26 @@ export const MUC_DO_HUONG_DAN_LABEL: Record<MucDoHuongDan, string> = Object.from
 export const KHOI_LUONG_CONG_VIEC_LABEL: Record<KhoiLuongCongViec, string> = Object.fromEntries(
   KHOI_LUONG_CONG_VIEC_OPTIONS.map((o) => [o.value, o.label])
 ) as Record<KhoiLuongCongViec, string>;
+
+// Form đánh giá cuối ca của Sup (đánh giá về NV) — dùng chung enum DungCongViec
+// với form tự đánh giá của NV để tiện đối chiếu chéo, nhưng đổi nhãn sang góc
+// nhìn của Sup (ngôi thứ 3) thay vì ngôi thứ nhất.
+export const DUNG_CONG_VIEC_SUP_OPTIONS: { value: DungCongViec; label: string }[] = [
+  { value: "dung_100", label: "NV làm đúng 100% công việc/line được giao" },
+  { value: "doi_viec_khac", label: "NV bị/tự đổi sang làm việc khác" },
+  { value: "khong_ro", label: "NV chưa rõ/chưa nắm được việc phải làm" },
+];
+
+export const KHA_NANG_TIEP_THU_OPTIONS: { value: KhaNangTiepThu; label: string }[] = [
+  { value: "nhanh", label: "Tiếp thu nhanh, thao tác tốt ngay" },
+  { value: "can_nhac_lai", label: "Cần hướng dẫn/nhắc lại nhiều lần" },
+  { value: "kho_tiep_thu", label: "Khó tiếp thu, chưa tự làm được" },
+];
+
+export const DUNG_CONG_VIEC_SUP_LABEL: Record<DungCongViec, string> = Object.fromEntries(
+  DUNG_CONG_VIEC_SUP_OPTIONS.map((o) => [o.value, o.label])
+) as Record<DungCongViec, string>;
+
+export const KHA_NANG_TIEP_THU_LABEL: Record<KhaNangTiepThu, string> = Object.fromEntries(
+  KHA_NANG_TIEP_THU_OPTIONS.map((o) => [o.value, o.label])
+) as Record<KhaNangTiepThu, string>;

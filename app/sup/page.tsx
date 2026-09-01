@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { getSupById, getTeamForSup, getPoolForCaList, getAssignmentsForEmployee, employeeProgress } from "@/lib/queries";
+import { getSupById, getTeamForSup, getAssignmentsForEmployee, employeeProgress } from "@/lib/queries";
 import SupDashboardClient from "@/components/sup/SupDashboardClient";
 import type { Assignment } from "@/lib/types";
 
@@ -12,7 +12,6 @@ export default function SupPage() {
   if (!sup) redirect("/login");
 
   const team = getTeamForSup(sup.id);
-  const pool = getPoolForCaList(sup.ca_phu_trach);
 
   const assignmentsByEmployee: Record<string, Assignment[]> = {};
   const progressByEmployee: Record<string, ReturnType<typeof employeeProgress>> = {};
@@ -30,7 +29,6 @@ export default function SupPage() {
     <SupDashboardClient
       sup={sup}
       team={team}
-      pool={pool}
       assignmentsByEmployee={assignmentsByEmployee}
       progressByEmployee={progressByEmployee}
       dueEvaluated={dueEvaluated}

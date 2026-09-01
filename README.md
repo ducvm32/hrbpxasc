@@ -20,39 +20,63 @@ build/khởi động lại. Muốn xoá sạch để làm lại từ đầu:
 docker compose down -v
 ```
 
-Có thể đổi khóa ký session bằng biến môi trường trong file `.env`:
+Copy `.env.example` thành `.env` rồi điền các biến môi trường (khóa session,
+cấu hình Google OAuth — xem mục "Đăng nhập Admin/Sup/HRBP qua Google" bên dưới).
+
+## Đăng nhập Admin/Sup/HRBP qua Google
+
+Admin, Sup và HRBP đăng nhập bằng **Google OAuth 2.0 / OpenID Connect**, giới
+hạn tài khoản Google Workspace domain `@ghn.vn` (nhân viên không có email công
+ty nên vẫn giữ đăng nhập riêng bằng Mã NV, không đổi). Code tích hợp nằm ở:
+
+- `lib/google-oauth.ts` — build authorization URL (kèm `hd=ghn.vn`), đổi code
+  lấy token, verify `id_token` (JWKS, RS256) bằng `crypto` sẵn có của Node —
+  kiểm tra `iss`/`aud`/`exp`/`nonce`, và bắt buộc `email_verified=true` +
+  `hd=ghn.vn` (param `hd` khi redirect chỉ là gợi ý UI, không có giá trị bảo
+  mật nên vẫn phải verify lại claim `hd` từ id_token đã ký).
+- `app/api/auth/google/login/route.ts` — khởi tạo `state`/`nonce`, redirect
+  sang Google.
+- `app/api/auth/google/callback/route.ts` — nhận `code`, verify token, đối
+  chiếu **email** trả về với `email` trong `admin_users`/`hrbp_users`/
+  `sup_users` để suy ra vai trò và tạo session nội bộ (thứ tự ưu tiên: admin
+  → hrbp → sup).
+
+Cần tạo OAuth client trên [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+(loại "Web application"), rồi đặt các biến môi trường sau (xem `.env.example`):
 
 ```
-SESSION_SECRET=mot-chuoi-bi-mat-cua-ban
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=https://<domain-app-cua-ban>/api/auth/google/callback
+GOOGLE_HD_DOMAIN=ghn.vn
 ```
+
+`GOOGLE_REDIRECT_URI` phải khớp **chính xác** với Authorized redirect URI đã
+khai báo trên Google Cloud (Google cho phép `http://localhost:PORT/...` khi
+test cục bộ, không cần HTTPS).
+
+Một tài khoản Google chỉ đăng nhập được nếu email đã tồn tại trong bảng
+`admin_users`, `hrbp_users` hoặc `sup_users` — Admin thêm/xoá Sup/HRBP qua
+trang Admin (tab quản lý tài khoản). Mật khẩu lưu cho các tài khoản này không
+còn dùng để đăng nhập, chỉ còn là cột bắt buộc cũ trong schema.
 
 ## Tài khoản demo
 
 **Nhân viên mới:** đăng nhập chỉ bằng **Mã NV** — do HRBP tạo ở màn HRBP (tab
-"Nhân viên & Gắn Sup").
+"Nhân viên").
 
-**Sup / HRBP:** đăng nhập bằng email `@ghn.vn` + mật khẩu demo:
-
-```
-Mật khẩu: ghn@2026
-```
-
-- HRBP: `hrbp@ghn.vn`
-- Sup: bất kỳ email nào trong bảng seed ở mục 7 của `require.md`, ví dụ
-  `thiennm@ghn.vn` (Nguyễn Minh Thiện — Ca 3 Inout).
-
-> Đây là bước xác thực demo thay cho SSO thật của GHN. Khi tích hợp SSO thực tế
-> (Azure AD / Google Workspace...), chỉ cần thay `loginAdminAction` trong
-> `lib/actions.ts` bằng luồng OAuth tương ứng — phần còn lại của hệ thống (session,
-> phân quyền theo vai trò) giữ nguyên.
+**Admin / Sup / HRBP:** đăng nhập qua Google (mục trên), dùng đúng email
+`@ghn.vn` đã được thêm vào `admin_users`/`hrbp_users`/`sup_users` (xem bảng
+seed ở mục 7 của `require.md` cho danh sách Sup mẫu, ví dụ `thiennm@ghn.vn` —
+Nguyễn Minh Thiện, Ca 3 Inout). Không còn mật khẩu demo cho 3 vai trò này.
 
 ## Luồng sử dụng nhanh để test
 
-1. Đăng nhập HRBP (`hrbp@ghn.vn`) → tab "Nhân viên & Gắn Sup" → thêm 1 nhân viên
+1. Đăng nhập HRBP (qua Google) → tab "Nhân viên" → thêm 1 nhân viên
    mới với Ca ví dụ `Ca 3 Inout`.
-2. Đăng xuất, đăng nhập Sup phụ trách đúng ca đó (`thiennm@ghn.vn` hoặc
-   `nhanpt@ghn.vn`) → nhân viên xuất hiện ở banner/POOL → bấm "Nhận" (hoặc kéo thả
-   vào bảng team) để gắn vào team.
+2. Đăng xuất, đăng nhập 1 Sup phụ trách đúng ca đó qua Google → nhân viên đã
+   tự động xuất hiện trong bảng team (mọi Sup phụ trách `Ca 3 Inout` đều thấy
+   chung, không cần "Nhận" riêng).
 3. Ở tab "Danh sách & Phân công 14 ngày", bấm "Phân công" để chọn người hướng dẫn,
    khu vực/line, công việc (dropdown lọc theo Inout/Sort) và thời gian hướng dẫn
    cho từng tuần.
@@ -89,8 +113,10 @@ Mật khẩu: ghn@2026
   15–21 tính từ `ngay_nhan_viec`; đồng thời chỉ cho mở tuần kế tiếp sau khi tuần
   trước đã có đánh giá (Tuần 1 → 2 → 3), không nhảy cóc. Sup và NV có tiến trình
   đánh giá độc lập nhau (`lib/week.ts`).
-- **Kéo thả:** dùng `@dnd-kit/core` để kéo NV từ POOL vào bảng team của Sup; có
-  kèm nút "Nhận" để thao tác nhanh/không cần chuột kéo thả.
+- **Team của Sup = theo Ca, không theo claim riêng:** NV thuộc Ca nào thì mọi
+  Sup có `ca_phu_trach` chứa Ca đó đều thấy và có quyền phân công/đánh giá
+  chung — không còn khái niệm 1 Sup "nhận" (claim) riêng 1 NV như trước
+  (`getTeamForSup`/`getSupsForCa` trong `lib/queries.ts`).
 - **Upload ảnh:** lưu vào `public/uploads` (volume riêng khi chạy Docker).
 
 ## Chạy dev không qua Docker (tuỳ chọn)

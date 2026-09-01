@@ -2,7 +2,6 @@
 
 import fs from "fs";
 import path from "path";
-import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import * as XLSX from "xlsx";
@@ -13,6 +12,10 @@ import {
   isKpiCa,
   DUNG_CONG_VIEC_LABEL,
   DUNG_CONG_VIEC_OPTIONS,
+  DUNG_CONG_VIEC_SUP_LABEL,
+  DUNG_CONG_VIEC_SUP_OPTIONS,
+  KHA_NANG_TIEP_THU_LABEL,
+  KHA_NANG_TIEP_THU_OPTIONS,
   KHOI_LUONG_CONG_VIEC_LABEL,
   KHOI_LUONG_CONG_VIEC_OPTIONS,
   MUC_DO_HUONG_DAN_LABEL,
@@ -23,6 +26,7 @@ import { allowedWeek } from "./week";
 import type {
   DungCongViec,
   Employee,
+  KhaNangTiepThu,
   KhoiLuongCongViec,
   MucDoHuongDan,
   Role,
@@ -57,33 +61,9 @@ export async function loginEmployeeAction(formData: FormData): Promise<ActionRes
   redirect("/employee");
 }
 
-export async function loginAdminAction(formData: FormData): Promise<ActionResult | void> {
-  const email = String(formData.get("email") || "").trim().toLowerCase();
-  const password = String(formData.get("password") || "");
-  if (!email.endsWith("@ghn.vn")) {
-    return { error: "Email phải có đuôi @ghn.vn" };
-  }
-  const db = readDB();
-  const admin = db.admin_users.find((u) => u.email.toLowerCase() === email);
-  if (admin) {
-    if (!bcrypt.compareSync(password, admin.password_hash)) return { error: "Sai mật khẩu" };
-    setSessionCookie({ role: "admin", id: admin.id, ho_ten: admin.ho_ten, ma_nv: admin.id });
-    redirect("/admin");
-  }
-  const hrbp = db.hrbp_users.find((u) => u.email.toLowerCase() === email);
-  if (hrbp) {
-    if (!bcrypt.compareSync(password, hrbp.password_hash)) return { error: "Sai mật khẩu" };
-    setSessionCookie({ role: "hrbp", id: hrbp.id, ho_ten: hrbp.ho_ten, ma_nv: hrbp.ma_nv });
-    redirect("/hrbp");
-  }
-  const sup = db.sup_users.find((u) => u.email.toLowerCase() === email);
-  if (sup) {
-    if (!bcrypt.compareSync(password, sup.password_hash)) return { error: "Sai mật khẩu" };
-    setSessionCookie({ role: "sup", id: sup.id, ho_ten: sup.ho_ten, ma_nv: sup.ma_nv });
-    redirect("/sup");
-  }
-  return { error: "Không tìm thấy tài khoản Quản trị với email này" };
-}
+// Admin/Sup/HRBP đăng nhập bằng Google OAuth (@ghn.vn Workspace) — xem
+// app/api/auth/google/*. Không còn form email+mật khẩu ở /login cho 3 vai trò
+// này.
 
 export async function logoutAction() {
   clearSessionCookie();
@@ -112,7 +92,6 @@ export async function addEmployeeAction(formData: FormData): Promise<ActionResul
       ma_nv,
       ca,
       ngay_nhan_viec,
-      sup_id: null,
       nguoi_huong_dan: null,
       khu_vuc_line: null,
       tuan_hien_tai: 1,
@@ -125,25 +104,15 @@ export async function addEmployeeAction(formData: FormData): Promise<ActionResul
   });
 }
 
-export async function assignEmployeeToSupAction(
-  employeeId: string,
-  targetSupId: string
-): Promise<ActionResult> {
-  requireRole(["hrbp"]);
-  return mutateDB((db) => {
-    const emp = db.employees.find((e) => e.id === employeeId);
-    if (!emp) return { error: "Không tìm thấy nhân viên" };
-    const sup = db.sup_users.find((s) => s.id === targetSupId);
-    if (!sup) return { error: "Không tìm thấy Sup" };
-    emp.sup_id = sup.id;
-    return { success: true as const };
-  });
-}
-
 export async function exportExcelBase64Action(): Promise<{ base64: string; filename: string }> {
   requireRole(["hrbp"]);
   const db = readDB();
   const supById = new Map(db.sup_users.map((s) => [s.id, s]));
+  const supNamesForCa = (ca: string) =>
+    db.sup_users
+      .filter((s) => s.ca_phu_trach.includes(ca))
+      .map((s) => s.ho_ten)
+      .join(", ") || "(Chưa có Sup phụ trách ca này)";
 
   const employeesSheet = db.employees.map((e) => {
     const days =
@@ -157,7 +126,7 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
       Ca: e.ca,
       "Ngày nhận việc": e.ngay_nhan_viec,
       "Số ngày đã làm": days,
-      "Sup phụ trách": e.sup_id ? supById.get(e.sup_id)?.ho_ten ?? "" : "(Chưa nhận - POOL)",
+      "Sup phụ trách": supNamesForCa(e.ca),
       "Người hướng dẫn": e.nguoi_huong_dan ?? "",
       "Khu vực / Line": e.khu_vuc_line ?? "",
       "KPI giữ người 14 ngày": e.la_kpi_14ngay ? "Có" : "",
@@ -172,7 +141,11 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
       "Sup đánh giá": supById.get(ev.sup_id)?.ho_ten ?? "",
       Tuần: ev.tuan,
       Ngày: ev.ngay,
-      "Làm đúng công việc": ev.lam_dung_cong_viec ? "Có" : "Không",
+      "Đúng công việc/line": DUNG_CONG_VIEC_SUP_LABEL[ev.dung_cong_viec] ?? ev.dung_cong_viec,
+      "Khả năng tiếp thu": KHA_NANG_TIEP_THU_LABEL[ev.kha_nang_tiep_thu] ?? ev.kha_nang_tiep_thu,
+      "Khối lượng công việc (Sup đánh giá)":
+        KHOI_LUONG_CONG_VIEC_LABEL[ev.khoi_luong_cong_viec] ?? ev.khoi_luong_cong_viec,
+      "Đánh giá thái độ & hiệu suất NV (sao)": ev.danh_gia_sao,
       "Nội dung": ev.noi_dung,
       "Vấn đề phát sinh": ev.van_de_phat_sinh,
       "Số ảnh đính kèm": ev.anh_urls.length,
@@ -230,7 +203,7 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
     "Mã NV": f.employee.ma_nv,
     "Họ tên": f.employee.ho_ten,
     Ca: f.employee.ca,
-    "Sup phụ trách": f.employee.sup_id ? supById.get(f.employee.sup_id)?.ho_ten ?? "" : "(Chưa nhận - POOL)",
+    "Sup phụ trách": supNamesForCa(f.employee.ca),
     Tuần: f.evaluation.tuan,
     Ngày: f.evaluation.ngay,
     "Lý do cảnh báo": f.reasons.join(" | "),
@@ -249,21 +222,6 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
 }
 
 // ---------- Sup ----------
-
-export async function claimEmployeeAction(employeeId: string): Promise<ActionResult> {
-  const session = requireRole(["sup"]);
-  return mutateDB((db) => {
-    const emp = db.employees.find((e) => e.id === employeeId);
-    if (!emp) return { error: "Không tìm thấy nhân viên" };
-    if (emp.sup_id) return { error: "Nhân viên này đã có Sup phụ trách" };
-    const sup = db.sup_users.find((s) => s.id === session.id)!;
-    if (!sup.ca_phu_trach.includes(emp.ca)) {
-      return { error: "Ca của bạn không khớp với ca của nhân viên này" };
-    }
-    emp.sup_id = sup.id;
-    return { success: true as const };
-  });
-}
 
 async function saveUploadedImages(formData: FormData, field: string): Promise<string[]> {
   const files = formData.getAll(field).filter((f): f is File => f instanceof File && f.size > 0);
@@ -294,7 +252,10 @@ export async function saveAssignmentAction(formData: FormData): Promise<ActionRe
   return mutateDB((db) => {
     const emp = db.employees.find((e) => e.id === employee_id);
     if (!emp) return { error: "Không tìm thấy nhân viên" };
-    if (emp.sup_id !== session.id) return { error: "Bạn không phụ trách nhân viên này" };
+    const sup = db.sup_users.find((s) => s.id === session.id)!;
+    if (!sup.ca_phu_trach.includes(emp.ca)) {
+      return { error: "Ca của bạn không khớp với ca của nhân viên này" };
+    }
 
     if (nguoi_huong_dan) emp.nguoi_huong_dan = nguoi_huong_dan;
     if (khu_vuc_line) emp.khu_vuc_line = khu_vuc_line;
@@ -328,15 +289,34 @@ export async function submitSupEvaluationAction(formData: FormData): Promise<Act
   const session = requireRole(["sup"]);
   const employee_id = String(formData.get("employee_id") || "");
   const tuan = Number(formData.get("tuan") || 0) as Tuan;
-  const lam_dung_cong_viec = formData.get("lam_dung_cong_viec") === "on";
+  const dung_cong_viec = String(formData.get("dung_cong_viec") || "") as DungCongViec;
+  const kha_nang_tiep_thu = String(formData.get("kha_nang_tiep_thu") || "") as KhaNangTiepThu;
+  const khoi_luong_cong_viec = String(formData.get("khoi_luong_cong_viec") || "") as KhoiLuongCongViec;
+  const danh_gia_sao = Number(formData.get("danh_gia_sao") || 0);
   const noi_dung = String(formData.get("noi_dung") || "").trim();
   const van_de_phat_sinh = String(formData.get("van_de_phat_sinh") || "").trim();
   const anh_urls = await saveUploadedImages(formData, "anh");
 
+  if (!DUNG_CONG_VIEC_SUP_OPTIONS.some((o) => o.value === dung_cong_viec)) {
+    return { error: "Vui lòng trả lời: NV có đang làm đúng công việc/line được phân công không" };
+  }
+  if (!KHA_NANG_TIEP_THU_OPTIONS.some((o) => o.value === kha_nang_tiep_thu)) {
+    return { error: "Vui lòng trả lời: Khả năng tiếp thu & thực hiện công việc của NV" };
+  }
+  if (!KHOI_LUONG_CONG_VIEC_OPTIONS.some((o) => o.value === khoi_luong_cong_viec)) {
+    return { error: "Vui lòng trả lời: Theo bạn, khối lượng công việc hiện tại của NV thế nào" };
+  }
+  if (!Number.isInteger(danh_gia_sao) || danh_gia_sao < 1 || danh_gia_sao > 5) {
+    return { error: "Vui lòng đánh giá thái độ & hiệu suất của NV từ 1 đến 5 sao" };
+  }
+
   const db = readDB();
   const emp = db.employees.find((e) => e.id === employee_id);
   if (!emp) return { error: "Không tìm thấy nhân viên" };
-  if (emp.sup_id !== session.id) return { error: "Bạn không phụ trách nhân viên này" };
+  const sup = db.sup_users.find((s) => s.id === session.id)!;
+  if (!sup.ca_phu_trach.includes(emp.ca)) {
+    return { error: "Ca của bạn không khớp với ca của nhân viên này" };
+  }
 
   const submittedWeeks = db.sup_evaluations
     .filter((ev) => ev.employee_id === employee_id)
@@ -352,7 +332,11 @@ export async function submitSupEvaluationAction(formData: FormData): Promise<Act
       sup_id: session.id,
       tuan,
       ngay: todayISO(),
-      lam_dung_cong_viec,
+      dung_cong_viec,
+      kha_nang_tiep_thu,
+      khoi_luong_cong_viec,
+      danh_gia_sao,
+      lam_dung_cong_viec: dung_cong_viec === "dung_100",
       noi_dung,
       van_de_phat_sinh,
       anh_urls,
@@ -416,9 +400,7 @@ export async function submitSelfEvaluationAction(formData: FormData): Promise<Ac
   });
 }
 
-// ---------- Admin (phân quyền & mật khẩu Sup/HRBP) ----------
-
-const MIN_PASSWORD_LEN = 6;
+// ---------- Admin (phân quyền Sup/HRBP) ----------
 
 export async function createAccountAction(formData: FormData): Promise<ActionResult> {
   requireRole(["admin"]);
@@ -426,18 +408,14 @@ export async function createAccountAction(formData: FormData): Promise<ActionRes
   const ho_ten = String(formData.get("ho_ten") || "").trim();
   const id = String(formData.get("id") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
-  const password = String(formData.get("password") || "");
   const ca_phu_trach = formData.getAll("ca_phu_trach").map(String);
 
   if (role !== "sup" && role !== "hrbp") return { error: "Vai trò không hợp lệ" };
-  if (!ho_ten || !id || !email || !password) return { error: "Vui lòng nhập đầy đủ thông tin" };
+  if (!ho_ten || !id || !email) return { error: "Vui lòng nhập đầy đủ thông tin" };
   if (!email.endsWith("@ghn.vn")) return { error: "Email phải có đuôi @ghn.vn" };
-  if (password.length < MIN_PASSWORD_LEN) return { error: `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LEN} ký tự` };
   if (role === "sup" && ca_phu_trach.length === 0) {
     return { error: "Vui lòng chọn ít nhất 1 Ca phụ trách cho Sup" };
   }
-
-  const password_hash = bcrypt.hashSync(password, 10);
 
   return mutateDB((db) => {
     const idTaken =
@@ -453,35 +431,10 @@ export async function createAccountAction(formData: FormData): Promise<ActionRes
     if (emailTaken) return { error: "Email đã được dùng bởi tài khoản khác" };
 
     if (role === "sup") {
-      db.sup_users.push({ id, ho_ten, ma_nv: id, email, ca_phu_trach, password_hash });
+      db.sup_users.push({ id, ho_ten, ma_nv: id, email, ca_phu_trach });
     } else {
-      db.hrbp_users.push({ id, ho_ten, ma_nv: id, email, password_hash });
+      db.hrbp_users.push({ id, ho_ten, ma_nv: id, email });
     }
-    return { success: true as const };
-  });
-}
-
-export async function setPasswordAction(formData: FormData): Promise<ActionResult> {
-  const session = requireRole(["admin"]);
-  const accountType = String(formData.get("account_type") || "");
-  const accountId = String(formData.get("account_id") || "");
-  const newPassword = String(formData.get("new_password") || "");
-
-  if (newPassword.length < MIN_PASSWORD_LEN) {
-    return { error: `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LEN} ký tự` };
-  }
-  if (accountType === "admin" && accountId !== session.id) {
-    return { error: "Chỉ có thể tự đổi mật khẩu của chính tài khoản Admin đang đăng nhập" };
-  }
-  if (!["admin", "sup", "hrbp"].includes(accountType)) return { error: "Loại tài khoản không hợp lệ" };
-
-  const password_hash = bcrypt.hashSync(newPassword, 10);
-
-  return mutateDB((db) => {
-    const list = accountType === "admin" ? db.admin_users : accountType === "sup" ? db.sup_users : db.hrbp_users;
-    const account = list.find((u) => u.id === accountId);
-    if (!account) return { error: "Không tìm thấy tài khoản" };
-    account.password_hash = password_hash;
     return { success: true as const };
   });
 }
@@ -505,11 +458,8 @@ export async function changeRoleAction(formData: FormData): Promise<ActionResult
     if (fromRole === "sup") {
       const idx = db.sup_users.findIndex((u) => u.id === accountId);
       if (idx === -1) return { error: "Không tìm thấy tài khoản" };
-      if (db.employees.some((e) => e.sup_id === accountId)) {
-        return { error: "Không thể đổi vai trò: Sup này đang phụ trách nhân viên. Hãy gắn lại NV cho Sup khác trước." };
-      }
       const [u] = db.sup_users.splice(idx, 1);
-      db.hrbp_users.push({ id: u.id, ho_ten: u.ho_ten, ma_nv: u.ma_nv, email: u.email, password_hash: u.password_hash });
+      db.hrbp_users.push({ id: u.id, ho_ten: u.ho_ten, ma_nv: u.ma_nv, email: u.email });
     } else {
       const idx = db.hrbp_users.findIndex((u) => u.id === accountId);
       if (idx === -1) return { error: "Không tìm thấy tài khoản" };
@@ -520,7 +470,6 @@ export async function changeRoleAction(formData: FormData): Promise<ActionResult
         ma_nv: u.ma_nv,
         email: u.email,
         ca_phu_trach,
-        password_hash: u.password_hash,
       });
     }
     return { success: true as const };
@@ -545,9 +494,6 @@ export async function deleteAccountAction(accountId: string, role: "sup" | "hrbp
   requireRole(["admin"]);
   return mutateDB((db) => {
     if (role === "sup") {
-      if (db.employees.some((e) => e.sup_id === accountId)) {
-        return { error: "Không thể xoá: Sup này đang phụ trách nhân viên. Hãy gắn lại NV cho Sup khác trước." };
-      }
       const before = db.sup_users.length;
       db.sup_users = db.sup_users.filter((u) => u.id !== accountId);
       if (db.sup_users.length === before) return { error: "Không tìm thấy tài khoản" };

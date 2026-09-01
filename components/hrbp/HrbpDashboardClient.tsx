@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
 import AddEmployeeForm from "@/components/hrbp/AddEmployeeForm";
 import EmptyState from "@/components/ui/EmptyState";
 import { IconAlertTriangle, IconDownload, IconUsers } from "@/components/ui/icons";
-import { assignEmployeeToSupAction, exportExcelBase64Action } from "@/lib/actions";
+import { exportExcelBase64Action } from "@/lib/actions";
 import {
   DUNG_CONG_VIEC_LABEL,
+  DUNG_CONG_VIEC_SUP_LABEL,
   isKpiCa,
+  KHA_NANG_TIEP_THU_LABEL,
   KHOI_LUONG_CONG_VIEC_LABEL,
   MUC_DO_HUONG_DAN_LABEL,
 } from "@/lib/constants";
@@ -77,13 +78,14 @@ export default function HrbpDashboardClient({
   }
 
   const kpiCount = employees.filter((e) => e.la_kpi_14ngay).length;
-  const poolCount = employees.filter((e) => !e.sup_id).length;
+  const supNamesForCa = (ca: string) =>
+    supUsers.filter((s) => s.ca_phu_trach.includes(ca)).map((s) => s.ho_ten);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <DashboardHeader
         title={`Xin chào, ${hrbpName}`}
-        subtitle="Thêm nhân viên mới, hỗ trợ gắn Sup, xem toàn bộ đánh giá và xuất báo cáo Excel."
+        subtitle="Thêm nhân viên mới, xem toàn bộ đánh giá và xuất báo cáo Excel."
         roleBadge={<span className="badge bg-slate-100 text-slate-600">HRBP (Admin)</span>}
         actions={
           <button onClick={handleExport} disabled={exporting} className="btn-primary text-sm">
@@ -93,9 +95,8 @@ export default function HrbpDashboardClient({
         }
       />
 
-      <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Tổng nhân viên mới" value={`${employees.length}`} icon={<IconUsers className="h-5 w-5" />} />
-        <StatCard label="Đang chờ nhận (POOL)" value={`${poolCount}`} highlight icon={<IconUsers className="h-5 w-5" />} />
         <StatCard label="Thuộc nhóm KPI giữ người 14 ngày" value={`${kpiCount}`} icon={<IconUsers className="h-5 w-5" />} />
         <StatCard
           label="Cảnh báo nguy cơ nghỉ việc"
@@ -140,7 +141,6 @@ export default function HrbpDashboardClient({
                   <th className="px-4 py-3">KPI 14N</th>
                   <th className="px-4 py-3">Đánh giá (Sup / NV)</th>
                   <th className="px-4 py-3">Cảnh báo</th>
-                  <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -159,11 +159,14 @@ export default function HrbpDashboardClient({
                       <td className="px-4 py-3">{e.ngay_nhan_viec}</td>
                       <td className="px-4 py-3">{tuanHienTai ? `Tuần ${tuanHienTai}` : "—"}</td>
                       <td className="px-4 py-3">
-                        {e.sup_id ? (
-                          supById.get(e.sup_id)?.ho_ten
-                        ) : (
-                          <span className="badge bg-orange-100 text-ghn-700">POOL</span>
-                        )}
+                        {(() => {
+                          const names = supNamesForCa(e.ca);
+                          return names.length > 0 ? (
+                            names.join(", ")
+                          ) : (
+                            <span className="badge bg-orange-100 text-ghn-700">Chưa có Sup</span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3">{e.nguoi_huong_dan ?? "—"}</td>
                       <td className="px-4 py-3">{e.khu_vuc_line ?? "—"}</td>
@@ -176,15 +179,12 @@ export default function HrbpDashboardClient({
                       <td className="px-4 py-3">
                         {isRisk && <span className="badge bg-red-100 text-red-700">Nguy cơ nghỉ việc</span>}
                       </td>
-                      <td className="px-4 py-3">
-                        {!e.sup_id && <AssignToSupCell employeeId={e.id} supUsers={supUsers} caFilter={e.ca} />}
-                      </td>
                     </tr>
                   );
                 })}
                 {employees.length === 0 && (
                   <tr>
-                    <td colSpan={11}>
+                    <td colSpan={10}>
                       <EmptyState title="Chưa có nhân viên nào" description="Thêm mới ở form phía trên." />
                     </td>
                   </tr>
@@ -202,17 +202,22 @@ export default function HrbpDashboardClient({
             <div className="space-y-2">
               {supEvaluations.map((ev) => {
                 const emp = empById.get(ev.employee_id);
-                const negative = !ev.lam_dung_cong_viec || !!ev.van_de_phat_sinh;
+                const negative =
+                  ev.dung_cong_viec !== "dung_100" ||
+                  ev.kha_nang_tiep_thu === "kho_tiep_thu" ||
+                  ev.danh_gia_sao < 3 ||
+                  !!ev.van_de_phat_sinh;
                 return (
                   <div key={ev.id} className={`card p-3 text-sm ${negative ? "border-red-200 bg-red-50/60" : ""}`}>
                     <p className="font-medium text-slate-800">
                       {emp?.ho_ten} ({emp?.ma_nv}) — Tuần {ev.tuan} — {ev.ngay}
                     </p>
                     <p className="text-slate-500">Sup: {supById.get(ev.sup_id)?.ho_ten}</p>
-                    <p className={`mt-1 ${ev.lam_dung_cong_viec ? "text-slate-600" : "text-red-600 font-medium"}`}>
-                      Đúng việc: {ev.lam_dung_cong_viec ? "Có" : "Không"}
-                      {ev.noi_dung ? ` — ${ev.noi_dung}` : ""}
+                    <p className="mt-1 text-slate-600">
+                      {DUNG_CONG_VIEC_SUP_LABEL[ev.dung_cong_viec]} · {KHA_NANG_TIEP_THU_LABEL[ev.kha_nang_tiep_thu]}{" "}
+                      · {KHOI_LUONG_CONG_VIEC_LABEL[ev.khoi_luong_cong_viec]} · {ev.danh_gia_sao}★
                     </p>
+                    {ev.noi_dung && <p className="text-slate-500">{ev.noi_dung}</p>}
                     {ev.van_de_phat_sinh && (
                       <p className="text-red-600">Vấn đề: {ev.van_de_phat_sinh}</p>
                     )}
@@ -282,7 +287,7 @@ export default function HrbpDashboardClient({
                     {f.evaluation.ngay}
                   </p>
                   <p className="text-slate-500">
-                    Sup phụ trách: {f.employee.sup_id ? supById.get(f.employee.sup_id)?.ho_ten ?? "—" : "Chưa nhận (POOL)"}
+                    Sup phụ trách: {supNamesForCa(f.employee.ca).join(", ") || "Chưa có Sup phụ trách ca này"}
                   </p>
                   <p className="mt-1 flex flex-wrap gap-1">
                     {f.reasons.map((r) => (
@@ -461,53 +466,6 @@ function StatCard({
           {icon}
         </span>
       )}
-    </div>
-  );
-}
-
-function AssignToSupCell({
-  employeeId,
-  supUsers,
-  caFilter,
-}: {
-  employeeId: string;
-  supUsers: SupUser[];
-  caFilter: string;
-}) {
-  const router = useRouter();
-  const [supId, setSupId] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [msg, setMsg] = useState<string | null>(null);
-  const candidates = supUsers.filter((s) => s.ca_phu_trach.includes(caFilter));
-
-  function assign() {
-    if (!supId) return;
-    setMsg(null);
-    startTransition(async () => {
-      const res = await assignEmployeeToSupAction(employeeId, supId);
-      if (res?.error) setMsg(res.error);
-      else router.refresh();
-    });
-  }
-
-  return (
-    <div className="flex items-center justify-end gap-2">
-      <select
-        value={supId}
-        onChange={(e) => setSupId(e.target.value)}
-        className="input w-40 text-xs"
-      >
-        <option value="">-- Chọn Sup --</option>
-        {candidates.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.ho_ten}
-          </option>
-        ))}
-      </select>
-      <button onClick={assign} disabled={isPending || !supId} className="btn-secondary text-xs">
-        Gắn
-      </button>
-      {msg && <span className="text-xs text-red-600">{msg}</span>}
     </div>
   );
 }

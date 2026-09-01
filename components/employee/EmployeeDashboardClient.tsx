@@ -10,13 +10,13 @@ type Progress = ReturnType<typeof employeeProgress>;
 
 export default function EmployeeDashboardClient({
   employee,
-  sup,
+  sups,
   assignments,
   progress,
   history,
 }: {
   employee: Employee;
-  sup: SupUser | null;
+  sups: SupUser[];
   assignments: Assignment[];
   progress: Progress;
   history: SelfEvaluation[];
@@ -26,6 +26,7 @@ export default function EmployeeDashboardClient({
   const congViecList = currentAssignment?.cong_viec
     ? currentAssignment.cong_viec.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
+  const supNames = sups.map((s) => s.ho_ten).join(", ");
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
@@ -36,15 +37,15 @@ export default function EmployeeDashboardClient({
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <InfoCard label="Đang ở" value={`Ngày ${Math.max(progress.days, 1)} · Tuần ${progress.dueWeek || 1}`} />
-        <InfoCard label="Sup phụ trách" value={sup ? sup.ho_ten : "Đang chờ Sup nhận"} />
+        <InfoCard label="Sup phụ trách" value={supNames || "Chưa có Sup phụ trách ca này"} />
         <InfoCard label="Người hướng dẫn" value={employee.nguoi_huong_dan ?? "Chưa phân công"} />
       </section>
 
       <section className="card mb-6 p-4">
         <h2 className="mb-3 font-semibold text-slate-800">Phân công hiện tại</h2>
-        {!sup ? (
+        {!currentAssignment ? (
           <p className="text-sm text-slate-500">
-            Bạn chưa được Sup phụ trách nhận vào team. Vui lòng chờ Sup hoặc liên hệ HRBP.
+            Chưa có Sup nào phân công công việc cụ thể cho bạn. Vui lòng chờ Sup hoặc liên hệ HRBP.
           </p>
         ) : (
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
