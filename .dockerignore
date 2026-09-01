@@ -7,3 +7,4 @@ public/uploads/*
 *.md
 .env
 .env.local
+*.tsbuildinfo
