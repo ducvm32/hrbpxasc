@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { getSessionSecret } from "./auth";
 
 // Google OAuth 2.0 / OpenID Connect — dùng cho đăng nhập Admin/Sup/HRBP bằng
 // tài khoản Google Workspace của công ty (@ghn.vn). Không dùng thư viện ngoài
@@ -130,10 +131,9 @@ export async function verifyIdToken(idToken: string, expectedNonce: string): Pro
 
 export const GOOGLE_FLOW_COOKIE_NAME = "ghn_google_flow";
 const FLOW_TTL_MS = 10 * 60 * 1000;
-const FLOW_SECRET = process.env.SESSION_SECRET || "ghn-onboarding-dev-secret-change-me";
 
 function signFlow(payload: string): string {
-  return crypto.createHmac("sha256", FLOW_SECRET).update(payload).digest("hex");
+  return crypto.createHmac("sha256", getSessionSecret()).update(payload).digest("hex");
 }
 
 export function encodeGoogleFlow(state: string, nonce: string): string {

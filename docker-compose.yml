@@ -8,7 +8,11 @@ services:
     environment:
       - NODE_ENV=production
       - HOSTNAME=0.0.0.0
-      - SESSION_SECRET=${SESSION_SECRET:-ghn-onboarding-change-this-secret}
+      # Bắt buộc đặt SESSION_SECRET thật (VD trong file .env cạnh file này,
+      # không commit) — không có giá trị mặc định vì mặc định sẽ lộ công khai
+      # trong mã nguồn, cho phép giả mạo cookie phiên đăng nhập. Thiếu biến
+      # này thì app chặn khởi động (xem lib/auth.ts).
+      - SESSION_SECRET=${SESSION_SECRET:?Cần đặt SESSION_SECRET trong file .env trước khi chạy}
       # Google OAuth 2.0 — bắt buộc để Admin/Sup/HRBP đăng nhập. Tạo OAuth
       # client trên Google Cloud Console (APIs & Services > Credentials),
       # loại "Web application", redirect URI phải khớp SSO_REDIRECT_URI bên dưới.

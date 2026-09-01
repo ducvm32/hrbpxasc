@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { buildAuthorizationUrl, encodeGoogleFlow, GOOGLE_FLOW_COOKIE_NAME } from "@/lib/google-oauth";
 
+// Route này không đọc gì từ request (không gọi cookies()/headers()) nên
+// Next.js không tự nhận diện được là cần render động — nếu để mặc định, nó
+// bị tối ưu thành static route và cache CHUNG 1 response (state/nonce chống
+// CSRF cố định) cho mọi lượt đăng nhập, vô hiệu hoá luôn bảo vệ CSRF của OAuth.
+export const dynamic = "force-dynamic";
+
 const COOKIE_SECURE = process.env.COOKIE_SECURE === "true";
 
 export async function GET(req: NextRequest) {

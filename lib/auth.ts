@@ -2,11 +2,30 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import type { SessionData } from "./types";
 
-const SECRET = process.env.SESSION_SECRET || "ghn-onboarding-dev-secret-change-me";
+const DEV_FALLBACK_SECRET = "ghn-onboarding-dev-secret-change-me";
 const COOKIE_NAME = "ghn_session";
 
+// SESSION_SECRET ký cookie phiên đăng nhập (mọi vai trò, kể cả admin) — nếu
+// dùng giá trị mặc định (biết trước, nằm sẵn trong mã nguồn public trên
+// GitHub) ở production, kẻ tấn công có thể tự ký cookie giả mạo bất kỳ vai
+// trò nào. Chỉ cho phép fallback khi chạy dev cục bộ (NODE_ENV !== production);
+// production bắt buộc phải tự set biến môi trường này, thiếu thì chặn khởi động.
+export function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Thiếu biến môi trường SESSION_SECRET ở production — không được dùng giá trị mặc định trong mã nguồn (không an toàn). Đặt SESSION_SECRET thành một chuỗi ngẫu nhiên bí mật trước khi khởi động."
+    );
+  }
+  return DEV_FALLBACK_SECRET;
+}
+
 function sign(payload: string): string {
-  return crypto.createHmac("sha256", SECRET).update(payload).digest("hex");
+  // Lấy secret lúc ký/verify (không phải lúc module load) — `next build` chạy
+  // với NODE_ENV=production nhưng chưa có biến môi trường thật của server, gọi
+  // getSessionSecret() ở module scope sẽ làm build luôn thất bại.
+  return crypto.createHmac("sha256", getSessionSecret()).update(payload).digest("hex");
 }
 
 export function encodeSession(data: SessionData): string {

@@ -5,3 +5,5 @@ public/uploads/*
 !public/uploads/.gitkeep
 .git
 *.md
+.env
+.env.local
