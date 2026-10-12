@@ -96,7 +96,7 @@ export default function LoginForm({
   return (
     <div className="w-full max-w-md">
       <div className="mb-6 flex flex-col items-center">
-        <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-12 w-auto" />
+        <img src="/logo.png" alt="GHN" className="h-12 w-auto" />
       </div>
 
       <div className="card p-6 sm:p-8">

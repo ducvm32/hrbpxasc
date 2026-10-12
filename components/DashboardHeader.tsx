@@ -17,7 +17,7 @@ export default function DashboardHeader({
           được xuống dòng (không cắt "…") vì màn hẹp không đủ chỗ cho cả 3. */}
       <div className="flex flex-col gap-2 sm:hidden">
         <div className="flex items-center justify-between gap-3">
-          <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto shrink-0" />
+          <img src="/logo.png" alt="GHN" className="h-8 w-auto shrink-0" />
           <LogoutButton />
         </div>
         <h1 className="text-xl font-bold leading-snug text-neutral-900">{title}</h1>
@@ -31,7 +31,7 @@ export default function DashboardHeader({
       {/* Desktop (sm+): logo đứng riêng 1 bên; tên/badge/mô tả và hành
           động+đăng xuất chia đều 2 đầu của phần còn lại. */}
       <div className="hidden sm:flex sm:items-center sm:gap-6">
-        <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-9 w-auto shrink-0" />
+        <img src="/logo.png" alt="GHN" className="h-10 w-auto shrink-0" />
         <div className="flex min-w-0 flex-1 items-center justify-between gap-6">
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold leading-tight text-neutral-900">{title}</h1>

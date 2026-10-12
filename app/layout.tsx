@@ -22,9 +22,6 @@ const fontDisplay = Space_Grotesk({
 export const metadata: Metadata = {
   title: "GHN Onboarding — Gắn Nhân Viên & Đánh Giá 3 Tuần",
   description: "Quản lý gắn nhân viên mới, phân công kèm cặp và đánh giá onboarding 3 tuần",
-  icons: {
-    icon: "/ghn-logo.png",
-  },
 };
 
 export const viewport: Viewport = {
