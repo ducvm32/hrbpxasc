@@ -244,17 +244,17 @@ export default function HrbpDashboardClient({
         names.length > 0 ? (
           names.join(", ")
         ) : (
-          <span className="badge bg-orange-100 text-ghn-700">Chưa có Sup</span>
+          <span className="badge bg-amber-100 text-amber-800">Chưa có Sup</span>
         ),
     };
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+    <main className="container-fluid pb-6 sm:pb-8">
       <DashboardHeader
         title={`Xin chào, ${hrbpName}`}
         subtitle="Thêm nhân viên mới, xem toàn bộ đánh giá và xuất báo cáo Excel."
-        roleBadge={<span className="badge bg-slate-100 text-slate-600">HRBP</span>}
+        roleBadge={<span className="badge bg-neutral-100 text-neutral-600">HRBP</span>}
         actions={
           <button onClick={handleExport} disabled={exporting} className="btn-primary text-sm">
             <IconDownload className="h-4 w-4" />
@@ -342,29 +342,29 @@ export default function HrbpDashboardClient({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {filteredEmployees.map((e) => {
                   const row = rowInfo(e);
                   return (
                     <tr key={e.id} className={row.isRisk ? "bg-red-50/60" : undefined}>
                       <td className="min-w-40 px-3 py-3">
-                        <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                        <p className="text-xs text-slate-500">{e.ma_nv}</p>
+                        <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                        <p className="text-xs text-neutral-600">{e.ma_nv}</p>
                         {row.isRisk && <span className="badge mt-1 bg-red-100 text-red-700">Nguy cơ nghỉ việc</span>}
                         {!e.sdt && <span className="badge mt-1 bg-amber-100 text-amber-800">Thiếu SĐT</span>}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3">
                         {e.ca}
-                        {isKpiCa(e.ca) && <span className="badge ml-1 bg-ghn-50 text-ghn-700">KPI 14N</span>}
+                        {isKpiCa(e.ca) && <span className="badge ml-1 bg-brand-50 text-brand-700">KPI 14N</span>}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3">
                         {formatDate(e.ngay_nhan_viec)}
-                        <p className="text-xs text-slate-500">{row.stage}</p>
+                        <p className="text-xs text-neutral-600">{row.stage}</p>
                       </td>
-                      <td className="min-w-36 px-3 py-3 text-xs text-slate-600">{row.supCell}</td>
+                      <td className="min-w-36 px-3 py-3 text-xs text-neutral-600">{row.supCell}</td>
                       <td className="px-3 py-3">{e.nguoi_huong_dan ?? "—"}</td>
                       <td className="px-3 py-3">{assignedJobByEmployeeId[e.id] || "—"}</td>
-                      <td className="whitespace-nowrap px-3 py-3 text-xs text-slate-600">
+                      <td className="whitespace-nowrap px-3 py-3 text-xs text-neutral-600">
                         <p>Sup {row.supDone}/3</p>
                         <p>NV {row.selfDone}/3</p>
                       </td>
@@ -392,29 +392,29 @@ export default function HrbpDashboardClient({
                 <li key={e.id} className={`card p-4 text-sm ${row.isRisk ? "border-red-200 bg-red-50/60" : ""}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                      <p className="text-xs text-neutral-500">
                         {e.ma_nv} · {e.ca}
                       </p>
                     </div>
-                    <span className="badge shrink-0 bg-slate-100 text-slate-600">{row.stage}</span>
+                    <span className="badge shrink-0 bg-neutral-100 text-neutral-600">{row.stage}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {row.isRisk && <span className="badge bg-red-100 text-red-700">Nguy cơ nghỉ việc</span>}
-                    {isKpiCa(e.ca) && <span className="badge bg-ghn-50 text-ghn-700">KPI 14N</span>}
+                    {isKpiCa(e.ca) && <span className="badge bg-brand-50 text-brand-700">KPI 14N</span>}
                     {!e.sdt && <span className="badge bg-amber-100 text-amber-800">Thiếu SĐT</span>}
                   </div>
                   <dl className="mt-3 grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5">
-                    <dt className="text-slate-500">Nhận việc</dt>
-                    <dd className="text-slate-800">{formatDate(e.ngay_nhan_viec)}</dd>
-                    <dt className="text-slate-500">Sup</dt>
-                    <dd className="text-slate-800">{row.supCell}</dd>
-                    <dt className="text-slate-500">Người HD</dt>
-                    <dd className="text-slate-800">{e.nguoi_huong_dan ?? "—"}</dd>
-                    <dt className="text-slate-500">Công việc</dt>
-                    <dd className="text-slate-800">{assignedJobByEmployeeId[e.id] || "—"}</dd>
-                    <dt className="text-slate-500">Đánh giá</dt>
-                    <dd className="text-slate-800">
+                    <dt className="text-neutral-500">Nhận việc</dt>
+                    <dd className="text-neutral-800">{formatDate(e.ngay_nhan_viec)}</dd>
+                    <dt className="text-neutral-500">Sup</dt>
+                    <dd className="text-neutral-800">{row.supCell}</dd>
+                    <dt className="text-neutral-500">Người HD</dt>
+                    <dd className="text-neutral-800">{e.nguoi_huong_dan ?? "—"}</dd>
+                    <dt className="text-neutral-500">Công việc</dt>
+                    <dd className="text-neutral-800">{assignedJobByEmployeeId[e.id] || "—"}</dd>
+                    <dt className="text-neutral-500">Đánh giá</dt>
+                    <dd className="text-neutral-800">
                       Sup {row.supDone}/3 · NV {row.selfDone}/3
                     </dd>
                   </dl>
@@ -452,15 +452,15 @@ export default function HrbpDashboardClient({
                   !!ev.van_de_phat_sinh;
                 return (
                   <div key={ev.id} className={`card p-3 text-sm ${negative ? "border-red-200 bg-red-50/60" : ""}`}>
-                    <p className="font-medium text-slate-800">
+                    <p className="font-medium text-neutral-800">
                       {emp?.ho_ten} ({emp?.ma_nv}) — Tuần {ev.tuan} — {formatDate(ev.ngay)}
                     </p>
-                    <p className="text-slate-500">Sup: {supById.get(ev.sup_id)?.ho_ten}</p>
-                    <p className="mt-1 text-slate-600">
+                    <p className="text-neutral-500">Sup: {supById.get(ev.sup_id)?.ho_ten}</p>
+                    <p className="mt-1 text-neutral-600">
                       {DUNG_CONG_VIEC_SUP_LABEL[ev.dung_cong_viec]} · {KHA_NANG_TIEP_THU_LABEL[ev.kha_nang_tiep_thu]}{" "}
                       · {KHOI_LUONG_CONG_VIEC_LABEL[ev.khoi_luong_cong_viec]} · {ev.danh_gia_sao}★
                     </p>
-                    {ev.noi_dung && <p className="text-slate-500">{ev.noi_dung}</p>}
+                    {ev.noi_dung && <p className="text-neutral-500">{ev.noi_dung}</p>}
                     {ev.van_de_phat_sinh && (
                       <p className="text-red-600">Vấn đề: {ev.van_de_phat_sinh}</p>
                     )}
@@ -468,7 +468,7 @@ export default function HrbpDashboardClient({
                 );
               })}
               {supEvaluations.length === 0 && (
-                <p className="card p-4 text-sm text-slate-500">Chưa có đánh giá nào từ Sup.</p>
+                <p className="card p-4 text-sm text-neutral-500">Chưa có đánh giá nào từ Sup.</p>
               )}
             </div>
           </div>
@@ -487,15 +487,15 @@ export default function HrbpDashboardClient({
                 const negative = reasons.length > 0;
                 return (
                   <div key={ev.id} className={`card p-3 text-sm ${negative ? "border-red-200 bg-red-50/60" : ""}`}>
-                    <p className="font-medium text-slate-800">
+                    <p className="font-medium text-neutral-800">
                       {emp?.ho_ten} ({emp?.ma_nv}) — Tuần {ev.tuan} — {formatDate(ev.ngay)}
                     </p>
-                    <p className="text-slate-600">
+                    <p className="text-neutral-600">
                       {DUNG_CONG_VIEC_LABEL[ev.dung_cong_viec]} · {MUC_DO_HUONG_DAN_LABEL[ev.muc_do_huong_dan]} ·{" "}
                       {KHOI_LUONG_CONG_VIEC_LABEL[ev.khoi_luong_cong_viec]} · {ev.danh_gia_sao}★
                     </p>
                     {ev.chia_se_cai_thien && (
-                      <p className="text-slate-500">Chia sẻ: {ev.chia_se_cai_thien}</p>
+                      <p className="text-neutral-500">Chia sẻ: {ev.chia_se_cai_thien}</p>
                     )}
                     {negative && (
                       <p className="mt-1 text-red-600">
@@ -507,7 +507,7 @@ export default function HrbpDashboardClient({
                 );
               })}
               {selfEvaluations.length === 0 && (
-                <p className="card p-4 text-sm text-slate-500">Chưa có tự đánh giá nào từ NV.</p>
+                <p className="card p-4 text-sm text-neutral-500">Chưa có tự đánh giá nào từ NV.</p>
               )}
             </div>
           </div>
@@ -518,18 +518,18 @@ export default function HrbpDashboardClient({
             <h2 className="section-title">
               Cảnh báo nguy cơ nghỉ việc ({riskFlags.length} lượt / {riskEmployeeIds.size} NV)
             </h2>
-            <p className="mb-2 text-xs text-slate-500">
+            <p className="mb-2 text-xs text-neutral-500">
               NV tự đánh giá tick &quot;Không được ai hướng dẫn&quot;, &quot;Quá nặng / Quá tải&quot;, hoặc cho
               điểm quản lý &amp; người hướng dẫn dưới 3 sao.
             </p>
             <div className="space-y-2">
               {riskFlags.map((f) => (
                 <div key={f.evaluation.id} className="card border-red-200 bg-red-50/60 p-3 text-sm">
-                  <p className="font-medium text-slate-800">
+                  <p className="font-medium text-neutral-800">
                     {f.employee.ho_ten} ({f.employee.ma_nv}) — {f.employee.ca} — Tuần {f.evaluation.tuan} —{" "}
                     {formatDate(f.evaluation.ngay)}
                   </p>
-                  <p className="text-slate-500">
+                  <p className="text-neutral-500">
                     Sup phụ trách: {supNamesForCa(f.employee.ca).join(", ") || "Chưa có Sup phụ trách ca này"}
                   </p>
                   <p className="mt-1 flex flex-wrap gap-1">
@@ -542,7 +542,7 @@ export default function HrbpDashboardClient({
                 </div>
               ))}
               {riskFlags.length === 0 && (
-                <p className="card p-4 text-sm text-slate-500">Chưa ghi nhận cảnh báo nào.</p>
+                <p className="card p-4 text-sm text-neutral-500">Chưa ghi nhận cảnh báo nào.</p>
               )}
             </div>
           </div>
@@ -553,8 +553,8 @@ export default function HrbpDashboardClient({
             </h2>
             <div className="card grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs uppercase text-slate-500">Điểm trung bình quản lý &amp; HD</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-xs uppercase text-neutral-500">Điểm trung bình quản lý &amp; HD</p>
+                <p className="font-display text-2xl font-bold text-neutral-900">
                   {selfEvalSummary.total ? selfEvalSummary.avgStars.toFixed(1) : "—"}★
                 </p>
                 <div className="mt-2 space-y-1">
@@ -570,7 +570,7 @@ export default function HrbpDashboardClient({
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Mức độ hướng dẫn</p>
+                  <p className="text-xs uppercase text-neutral-500">Mức độ hướng dẫn</p>
                   {Object.entries(selfEvalSummary.mucDoHuongDanCounts).map(([k, v]) => (
                     <SummaryBar
                       key={k}
@@ -581,7 +581,7 @@ export default function HrbpDashboardClient({
                   ))}
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Khối lượng công việc</p>
+                  <p className="text-xs uppercase text-neutral-500">Khối lượng công việc</p>
                   {Object.entries(selfEvalSummary.khoiLuongCongViecCounts).map(([k, v]) => (
                     <SummaryBar
                       key={k}
@@ -592,7 +592,7 @@ export default function HrbpDashboardClient({
                   ))}
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Đúng công việc / line</p>
+                  <p className="text-xs uppercase text-neutral-500">Đúng công việc / line</p>
                   {Object.entries(selfEvalSummary.dungCongViecCounts).map(([k, v]) => (
                     <SummaryBar
                       key={k}
@@ -623,11 +623,11 @@ function SummaryBar({ label, count, total }: { label: string; count: number; tot
   const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-start gap-2 text-xs">
-      <span className="w-32 shrink-0 text-slate-600">{label}</span>
-      <div className="mt-1.5 h-2 flex-1 rounded-full bg-slate-100">
-        <div className="h-2 rounded-full bg-ghn-500" style={{ width: `${pct}%` }} />
+      <span className="w-32 shrink-0 text-neutral-600">{label}</span>
+      <div className="mt-1.5 h-2 flex-1 rounded-full bg-neutral-100">
+        <div className="h-2 rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
       </div>
-      <span className="mt-0.5 w-14 shrink-0 text-right text-slate-500">
+      <span className="mt-0.5 w-14 shrink-0 text-right text-neutral-500">
         {count} ({pct}%)
       </span>
     </div>
@@ -650,14 +650,14 @@ function StatCard({
   return (
     <div
       className={`card card-interactive flex items-start justify-between gap-3 p-4 ${
-        highlight ? "border-ghn-200 bg-ghn-50" : ""
+        highlight ? "border-brand-200 bg-brand-50" : ""
       } ${danger ? "border-red-200 bg-red-50" : ""}`}
     >
       <div>
-        <p className="text-sm text-slate-500">{label}</p>
+        <p className="text-sm text-neutral-500">{label}</p>
         <p
-          className={`mt-1 text-2xl font-bold ${
-            danger ? "text-red-700" : highlight ? "text-ghn-700" : "text-slate-900"
+          className={`mt-1 font-display text-2xl font-bold ${
+            danger ? "text-red-700" : highlight ? "text-brand-700" : "text-neutral-900"
           }`}
         >
           {value}
@@ -666,7 +666,7 @@ function StatCard({
       {icon && (
         <span
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-            danger ? "bg-red-100 text-red-600" : highlight ? "bg-ghn-100 text-ghn-700" : "bg-slate-100 text-slate-500"
+            danger ? "bg-red-100 text-red-600" : highlight ? "bg-brand-100 text-brand-700" : "bg-neutral-100 text-neutral-500"
           }`}
         >
           {icon}

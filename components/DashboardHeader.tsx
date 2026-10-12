@@ -12,7 +12,7 @@ export default function DashboardHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="z-30 -mx-4 sm:sticky sm:top-0 mb-6 border-b border-slate-200/80 bg-white/90 px-4 py-4 backdrop-blur-md">
+    <header className="z-30 -mx-4 mb-6 border-b border-neutral-200/80 bg-white/90 px-4 py-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       {/* Mobile (<sm): hàng 1 chỉ có logo + đăng xuất; tên để riêng hàng 2 và
           được xuống dòng (không cắt "…") vì màn hẹp không đủ chỗ cho cả 3. */}
       <div className="flex flex-col gap-2 sm:hidden">
@@ -20,10 +20,10 @@ export default function DashboardHeader({
           <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-8 w-auto shrink-0" />
           <LogoutButton />
         </div>
-        <h1 className="text-xl font-bold leading-snug text-slate-900">{title}</h1>
+        <h1 className="text-xl font-bold leading-snug text-neutral-900">{title}</h1>
         <div className="flex flex-wrap items-center gap-2">
           {roleBadge}
-          <p className="text-sm text-slate-500">{subtitle}</p>
+          <p className="text-sm text-neutral-500">{subtitle}</p>
         </div>
         {actions && <div className="flex items-center gap-2.5">{actions}</div>}
       </div>
@@ -34,10 +34,10 @@ export default function DashboardHeader({
         <img src="/ghn-logo.png" alt="Giao Hàng Nhanh" className="h-9 w-auto shrink-0" />
         <div className="flex min-w-0 flex-1 items-center justify-between gap-6">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold leading-tight text-slate-900">{title}</h1>
+            <h1 className="truncate text-2xl font-bold leading-tight text-neutral-900">{title}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {roleBadge}
-              <p className="text-sm text-slate-500">{subtitle}</p>
+              <p className="text-sm text-neutral-500">{subtitle}</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2.5">

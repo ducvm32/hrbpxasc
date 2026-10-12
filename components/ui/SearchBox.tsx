@@ -6,7 +6,7 @@ import { useId } from "react";
 export default function SearchBox({
   value,
   onChange,
-  placeholder = "Tìm theo họ tên hoặc mã NV...",
+  placeholder = "Tìm theo tên hoặc mã NV",
   label = "Tìm kiếm",
 }: {
   value: string;

@@ -7,26 +7,29 @@ export function RadioQuestion({
   name,
   question,
   options,
+  wide = false,
 }: {
   name: string;
   question: string;
   options: { value: string; label: string }[];
+  /** Xếp các lựa chọn thành hàng ngang trên màn rộng (form chiếm full-width). */
+  wide?: boolean;
 }) {
   return (
     <fieldset>
       <legend className="label">{question}</legend>
-      <div className="space-y-1.5">
+      <div className={wide ? "grid grid-cols-1 gap-1.5 lg:grid-cols-3 lg:gap-2" : "space-y-1.5"}>
         {options.map((o) => (
           <label
             key={o.value}
-            className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition duration-150 has-[:checked]:border-ghn has-[:checked]:bg-ghn-50 has-[:checked]:text-ghn-700 hover:bg-slate-50"
+            className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 transition duration-150 has-[:checked]:border-brand has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700 hover:bg-neutral-50"
           >
             <input
               type="radio"
               name={name}
               value={o.value}
               required
-              className="h-4 w-4 shrink-0 border-slate-300 accent-ghn-600"
+              className="h-4 w-4 shrink-0 border-neutral-300 accent-brand-600"
             />
             {o.label}
           </label>
@@ -54,7 +57,7 @@ export function StarRating({ name, legend }: { name: string; legend: string }) {
           <label
             key={star}
             onMouseEnter={() => setHover(star)}
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-2xl leading-none transition-transform duration-100 hover:scale-110 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ghn"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-2xl leading-none transition-transform duration-100 hover:scale-110 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand"
           >
             <input
               type="radio"
@@ -65,13 +68,13 @@ export function StarRating({ name, legend }: { name: string; legend: string }) {
               onChange={() => setValue(star)}
               className="sr-only"
             />
-            <span aria-hidden="true" className={shown >= star ? "text-ghn-500" : "text-slate-300"}>
+            <span aria-hidden="true" className={shown >= star ? "text-brand-500" : "text-neutral-300"}>
               ★
             </span>
             <span className="sr-only">{star} sao</span>
           </label>
         ))}
-        <span className="ml-2 whitespace-nowrap text-sm text-slate-500" aria-live="polite">
+        <span className="ml-2 whitespace-nowrap text-sm text-neutral-500" aria-live="polite">
           {value ? `${value}/5 sao` : "Chưa chọn"}
         </span>
       </div>

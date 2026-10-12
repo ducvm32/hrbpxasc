@@ -45,7 +45,7 @@ export default function SelfEvalForm({
 
   if (allowedWeekNum === 0) {
     return (
-      <div className="card p-4 text-sm text-slate-500">
+      <div className="card p-4 text-sm text-neutral-500">
         {state?.success && (
           <p className="mb-2 text-green-700">Đã ghi nhận tự đánh giá của bạn. Cảm ơn bạn!</p>
         )}
@@ -60,23 +60,26 @@ export default function SelfEvalForm({
     <form action={formAction} key={allowedWeekNum} className="card space-y-4 p-4">
       <input type="hidden" name="tuan" value={allowedWeekNum} />
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-slate-800">Tự đánh giá — Tuần {allowedWeekNum}</h3>
-        <span className="badge bg-ghn-50 text-ghn-700">Đang mở</span>
+        <h3 className="font-semibold text-neutral-800">Tự đánh giá — Tuần {allowedWeekNum}</h3>
+        <span className="badge bg-brand-50 text-brand-700">Đang mở</span>
       </div>
 
       <RadioQuestion
+        wide
         name="dung_cong_viec"
         question="1. Hôm nay bạn có thực tế làm đúng công việc/line mà Sup đã gắn không?"
         options={DUNG_CONG_VIEC_OPTIONS}
       />
 
       <RadioQuestion
+        wide
         name="muc_do_huong_dan"
         question="2. Người hướng dẫn trực tiếp có kèm cặp, chỉ bảo thực tế cho bạn không?"
         options={MUC_DO_HUONG_DAN_OPTIONS}
       />
 
       <RadioQuestion
+        wide
         name="khoi_luong_cong_viec"
         question="3. Bạn cảm thấy khối lượng công việc tuần này thế nào?"
         options={KHOI_LUONG_CONG_VIEC_OPTIONS}
@@ -98,7 +101,7 @@ export default function SelfEvalForm({
         <input id={`${uid}-anh`} type="file" name="anh" accept="image/*" multiple className="text-sm" />
       </div>
 
-      <p className="rounded-md bg-ghn-50 px-3 py-2 text-xs leading-relaxed text-ghn-700">
+      <p className="rounded-md bg-brand-50 px-3 py-2 text-xs leading-relaxed text-brand-700">
         <b>Cam kết bảo mật 100%:</b> Nội dung tự đánh giá này được bảo mật và chuyển thẳng về cho Bộ
         phận Nhân sự (HRBP) để hỗ trợ bạn. Quản lý trực tiếp (Sup) hoàn toàn không xem được nhận xét
         riêng của bạn. Hãy an tâm chia sẻ trung thực nhé!

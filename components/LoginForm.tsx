@@ -100,14 +100,14 @@ export default function LoginForm({
       </div>
 
       <div className="card p-6 sm:p-8">
-        <h1 className="mb-1 text-center text-lg font-semibold text-slate-900">
+        <h1 className="mb-1 text-center text-lg font-semibold text-neutral-900">
           Đăng nhập hệ thống Gắn NV &amp; Đánh giá Onboarding
         </h1>
-        <p className="mb-6 text-center text-sm text-slate-500">
+        <p className="mb-6 text-center text-sm text-neutral-500">
           Gắn nhân viên mới, phân công kèm cặp và đánh giá 3 tuần đầu
         </p>
 
-        <div role="tablist" aria-label="Loại tài khoản" className="mb-6 grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm font-medium">
+        <div role="tablist" aria-label="Loại tài khoản" className="mb-6 grid grid-cols-2 rounded-lg bg-neutral-100 p-1 text-sm font-medium">
           <button
             type="button"
             role="tab"
@@ -116,7 +116,7 @@ export default function LoginForm({
             aria-controls="panel-nhanvien"
             onClick={() => setMode("nhanvien")}
             className={`min-h-10 rounded-md px-2 py-2 transition duration-150 ${
-              mode === "nhanvien" ? "bg-white text-ghn-700 shadow-soft" : "text-slate-600 hover:text-slate-800"
+              mode === "nhanvien" ? "bg-white text-brand-700 shadow-soft" : "text-neutral-600 hover:text-neutral-800"
             }`}
           >
             Nhân Viên
@@ -129,7 +129,7 @@ export default function LoginForm({
             aria-controls="panel-quantri"
             onClick={() => setMode("quantri")}
             className={`min-h-10 rounded-md px-2 py-2 transition duration-150 ${
-              mode === "quantri" ? "bg-white text-ghn-700 shadow-soft" : "text-slate-600 hover:text-slate-800"
+              mode === "quantri" ? "bg-white text-brand-700 shadow-soft" : "text-neutral-600 hover:text-neutral-800"
             }`}
           >
             Quản Trị (Sup / HRBP / Admin)
@@ -202,7 +202,7 @@ export default function LoginForm({
           role="tabpanel"
           aria-labelledby="tab-quantri"
           className={`space-y-4 ${mode === "quantri" ? "animate-fade-in" : "hidden"}`}>
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-neutral-500">
             Đăng nhập bằng tài khoản Google Workspace của công ty (@ghn.vn).
           </p>
           {googleError && (

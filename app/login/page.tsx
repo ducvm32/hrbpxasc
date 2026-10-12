@@ -18,9 +18,9 @@ export default function LoginPage({ searchParams }: { searchParams?: { google_er
   }
 
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-b from-ghn-50 via-white to-white px-4 py-10">
-      <div className="pointer-events-none absolute -left-24 -top-24 z-0 h-72 w-72 rounded-full bg-ghn-100 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-16 z-0 h-80 w-80 rounded-full bg-ghn-200/40 blur-3xl" />
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-b from-brand-50 via-white to-white px-4 py-10">
+      <div className="pointer-events-none absolute -left-24 -top-24 z-0 h-72 w-72 rounded-full bg-brand-100 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-16 z-0 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl" />
       <div className="relative z-10">
         <LoginForm googleError={searchParams?.google_error} recaptchaSiteKey={getRecaptchaSiteKey()} />
       </div>

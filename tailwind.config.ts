@@ -9,28 +9,31 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
+          "var(--font-body)",
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',
           "Roboto",
           '"Helvetica Neue"',
           "Arial",
-          '"Noto Sans"',
           "sans-serif",
         ],
+        display: ["var(--font-display)", "var(--font-body)", "-apple-system", '"Segoe UI"', "sans-serif"],
       },
       colors: {
-        ghn: {
-          DEFAULT: "#F26522",
-          50: "#FFF3EC",
-          100: "#FFE3D1",
-          200: "#FFCBA8",
-          500: "#F26522",
-          // 600/700 đủ tương phản ≥ 4.5:1 với chữ trắng (WCAG AA) — dùng cho nền
-          // nút chính và chữ nhấn; #F26522 gốc chỉ đạt ~3.1:1 nên chỉ dùng cho
-          // viền/điểm nhấn trang trí, không làm nền cho chữ nhỏ.
-          600: "#C2410C",
-          700: "#B4440F",
+        // Bảng màu lấy theo giaohangnang.com (biến CSS --primary-1/2/3,
+        // --border-primary-4 của trang). 600/700 đạt tương phản ≥ 4.5:1 với chữ
+        // trắng (WCAG AA) — dùng cho nền nút chính & chữ nhấn; #00A19A gốc chỉ
+        // ~3.2:1 nên chỉ dùng cho viền/điểm nhấn trang trí, không làm nền chữ nhỏ.
+        brand: {
+          DEFAULT: "#00A19A",
+          50: "#EDFBF9",
+          100: "#C7FFF6",
+          200: "#8FEDE3",
+          400: "#04C8BB",
+          500: "#00A19A",
+          600: "#05807C",
+          700: "#0A6563",
         },
       },
       boxShadow: {

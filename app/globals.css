@@ -7,19 +7,35 @@ body {
   height: 100%;
 }
 
+/* Preflight của Tailwind không cho phần tử form kế thừa word-spacing. */
+button,
+input,
+select,
+textarea {
+  word-spacing: inherit;
+}
+
+h1,
+h2,
+h3 {
+  @apply font-display tracking-tight;
+}
+
 body {
-  background-color: #f7f7f9;
-  background-image: radial-gradient(1200px 480px at 50% -120px, rgba(242, 101, 34, 0.06), transparent 70%);
+  background-color: #fafafa;
+  background-image: radial-gradient(1200px 480px at 50% -120px, rgba(0, 161, 154, 0.07), transparent 70%);
   background-repeat: no-repeat;
-  color: #1f2430;
-  font-feature-settings: "cv11", "ss01";
+  color: #171717;
+  /* Plus Jakarta Sans có khoảng trắng rất hẹp (~0.19em) — tiếng Việt toàn từ
+     ngắn có dấu nên nhìn như dính chữ ("LêVănBình"); nới thêm cho dễ đọc. */
+  word-spacing: 0.08em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background-color: #ffe3d1;
-  color: #b4440f;
+  background-color: #c7fff6;
+  color: #0a6563;
 }
 
 /* Scrollbar */
@@ -31,23 +47,29 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #d6d9e0;
+  background-color: #d4d4d4;
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #b8bdc7;
+  background-color: #a3a3a3;
   background-clip: content-box;
 }
 
 *:focus-visible {
-  outline: 2px solid #f26522;
+  outline: 2px solid #05807c;
   outline-offset: 2px;
 }
 
+/* Full-width ở mọi breakpoint (tương đương .container-fluid của Bootstrap) —
+   chỉ co giãn khoảng đệm 2 bên theo kích thước màn hình. */
+.container-fluid {
+  @apply w-full px-4 sm:px-6 lg:px-8;
+}
+
 .card {
-  @apply rounded-2xl border border-slate-200/80 bg-white shadow-card;
+  @apply rounded-2xl border border-neutral-200/80 bg-white shadow-card;
 }
 
 .card-interactive {
@@ -55,11 +77,11 @@ body {
 }
 
 .btn-primary {
-  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-ghn-600 px-4 py-2 font-medium text-white shadow-soft transition duration-150 ease-out hover:bg-ghn-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 font-medium text-white shadow-soft transition duration-150 ease-out hover:bg-brand-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
 }
 
 .btn-secondary {
-  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 shadow-soft transition duration-150 ease-out hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 font-medium text-neutral-700 shadow-soft transition duration-150 ease-out hover:border-neutral-400 hover:bg-neutral-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
 }
 
 .btn-danger {
@@ -67,11 +89,11 @@ body {
 }
 
 .input {
-  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition duration-150 ease-out focus:border-ghn focus:outline-none focus:ring-4 focus:ring-ghn/10;
+  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 placeholder:text-neutral-400 transition duration-150 ease-out focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10;
 }
 
 .label {
-  @apply mb-1.5 block text-sm font-medium text-slate-700;
+  @apply mb-1.5 block text-sm font-medium text-neutral-700;
 }
 
 .badge {
@@ -79,27 +101,27 @@ body {
 }
 
 .section-title {
-  @apply mb-2 text-sm font-semibold uppercase tracking-wide text-slate-600;
+  @apply mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-600;
 }
 
 .tab-pill {
-  @apply relative shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition duration-150 ease-out hover:text-slate-800 sm:px-4;
+  @apply relative shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-neutral-600 transition duration-150 ease-out hover:text-neutral-800 sm:px-4;
 }
 
 .tab-pill-active {
-  @apply bg-white text-ghn-700 shadow-soft;
+  @apply bg-white text-brand-700 shadow-soft;
 }
 
 .table-shell {
-  @apply overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card;
+  @apply overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-card;
 }
 
 .table-shell table thead {
-  @apply bg-slate-50/80 text-xs font-semibold uppercase tracking-wide text-slate-500;
+  @apply bg-neutral-50/80 text-xs font-semibold uppercase tracking-wide text-neutral-500;
 }
 
 .table-shell table tbody tr {
-  @apply transition-colors hover:bg-slate-50/70;
+  @apply transition-colors hover:bg-neutral-50/70;
 }
 
 .alert-error {
@@ -111,13 +133,13 @@ body {
 }
 
 .modal-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 px-4 py-8 backdrop-blur-sm animate-fade-in;
+  @apply fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-neutral-900/50 px-4 py-8 backdrop-blur-sm animate-fade-in;
 }
 
 .modal-panel {
-  @apply w-full animate-scale-in rounded-2xl border border-slate-200/80 bg-white shadow-pop;
+  @apply w-full animate-scale-in rounded-2xl border border-neutral-200/80 bg-white shadow-pop;
 }
 
 input[type="file"] {
-  @apply text-sm text-slate-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-ghn-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ghn-700 file:transition file:duration-150 hover:file:bg-ghn-100;
+  @apply text-sm text-neutral-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 file:transition file:duration-150 hover:file:bg-brand-100;
 }

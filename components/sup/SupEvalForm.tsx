@@ -42,8 +42,8 @@ function WeekTracker({ doneWeeks, allowedWeekNum }: { doneWeeks: number[]; allow
               done
                 ? "border-green-200 bg-green-50 text-green-700"
                 : open
-                  ? "border-ghn-100 bg-ghn-50 text-ghn-700"
-                  : "border-slate-200 bg-slate-50 text-slate-500"
+                  ? "border-brand-100 bg-brand-50 text-brand-700"
+                  : "border-neutral-200 bg-neutral-50 text-neutral-500"
             }`}
           >
             <p className="font-medium">Tuần {tuan}</p>
@@ -76,11 +76,11 @@ export default function SupEvalForm({
     <div className="card space-y-3 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-slate-800">{employee.ho_ten} — {employee.ma_nv}</p>
-          <p className="text-xs text-slate-500">{employee.ca}</p>
+          <p className="font-medium text-neutral-800">{employee.ho_ten} — {employee.ma_nv}</p>
+          <p className="text-xs text-neutral-500">{employee.ca}</p>
         </div>
         {allowedWeekNum > 0 && (
-          <span className="badge bg-ghn-50 text-ghn-700">Đánh giá Tuần {allowedWeekNum}</span>
+          <span className="badge bg-brand-50 text-brand-700">Đánh giá Tuần {allowedWeekNum}</span>
         )}
       </div>
 
@@ -91,7 +91,7 @@ export default function SupEvalForm({
       )}
 
       {allowedWeekNum === 0 ? (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-neutral-500">
           {doneWeeks.length >= 3
             ? "Đã hoàn tất đánh giá đủ 3 tuần."
             : "Chưa đến hạn đánh giá tuần mới cho nhân viên này."}

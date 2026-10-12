@@ -86,17 +86,17 @@ export default function Modal({
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold text-slate-900">
+            <h2 id={titleId} className="text-lg font-semibold text-neutral-900">
               {title}
             </h2>
-            {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+            {subtitle && <p className="mt-0.5 text-sm text-neutral-500">{subtitle}</p>}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Đóng"
             data-modal-close="true"
-            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-700"
           >
             <IconClose className="h-5 w-5" />
           </button>

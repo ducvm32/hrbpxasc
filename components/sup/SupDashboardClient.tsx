@@ -80,12 +80,12 @@ export default function SupDashboardClient({
       : "Không có nhân viên nào khớp bộ lọc / từ khoá";
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+    <main className="container-fluid pb-6 sm:pb-8">
       <DashboardHeader
         title={`Xin chào, ${sup.ho_ten}`}
         subtitle="Phân công người hướng dẫn, giao việc theo tuần và đánh giá cuối ca cho NV mới trong Ca bạn phụ trách."
         roleBadge={
-          <span className="badge bg-slate-100 text-slate-600">Sup · {sup.ca_phu_trach.join(" / ")}</span>
+          <span className="badge bg-neutral-100 text-neutral-600">Sup · {sup.ca_phu_trach.join(" / ")}</span>
         }
       />
 
@@ -95,7 +95,7 @@ export default function SupDashboardClient({
         <StatCard label="Thuộc nhóm KPI giữ người 14 ngày" value={`${kpiCount}`} highlight={kpiCount > 0} />
       </section>
 
-      <p className="mb-6 text-sm text-slate-500">
+      <p className="mb-6 text-sm text-neutral-500">
         Mọi Sup phụ trách cùng Ca đều thấy và có thể phân công/đánh giá chung danh sách dưới đây.
       </p>
 
@@ -144,19 +144,19 @@ export default function SupDashboardClient({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {assignList.map((e) => {
                   const p = progressByEmployee[e.id];
                   const cur = currentAssignment(assignmentsByEmployee[e.id] ?? [], p);
                   return (
-                    <tr key={e.id} className={isDone(e) ? "text-slate-500" : undefined}>
+                    <tr key={e.id} className={isDone(e) ? "text-neutral-500" : undefined}>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                        <p className="text-xs text-slate-500">{e.ma_nv}</p>
+                        <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                        <p className="text-xs text-neutral-500">{e.ma_nv}</p>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         {e.ca}
-                        {e.la_kpi_14ngay && <span className="badge ml-1 bg-orange-100 text-ghn-700">KPI14</span>}
+                        {e.la_kpi_14ngay && <span className="badge ml-1 bg-brand-50 text-brand-700">KPI14</span>}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">{stageLabel(e, p)}</td>
                       <td className="px-4 py-3">{e.nguoi_huong_dan ?? "—"}</td>
@@ -193,8 +193,8 @@ export default function SupDashboardClient({
                 <li key={e.id} className="card p-4 text-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                      <p className="text-xs text-neutral-500">
                         {e.ma_nv} · {e.ca}
                         {e.la_kpi_14ngay && " · KPI14"}
                       </p>
@@ -202,12 +202,12 @@ export default function SupDashboardClient({
                     <StatusBadge done={isDone(e)} assigned={!!cur} />
                   </div>
                   <dl className="mt-3 grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5">
-                    <dt className="text-slate-500">Tiến độ</dt>
-                    <dd className="text-slate-800">{stageLabel(e, p)}</dd>
-                    <dt className="text-slate-500">Người HD</dt>
-                    <dd className="text-slate-800">{e.nguoi_huong_dan ?? "—"}</dd>
-                    <dt className="text-slate-500">Công việc</dt>
-                    <dd className="text-slate-800">{cur?.cong_viec || "—"}</dd>
+                    <dt className="text-neutral-500">Tiến độ</dt>
+                    <dd className="text-neutral-800">{stageLabel(e, p)}</dd>
+                    <dt className="text-neutral-500">Người HD</dt>
+                    <dd className="text-neutral-800">{e.nguoi_huong_dan ?? "—"}</dd>
+                    <dt className="text-neutral-500">Công việc</dt>
+                    <dd className="text-neutral-800">{cur?.cong_viec || "—"}</dd>
                   </dl>
                   <button onClick={() => setEditingEmployee(e)} className="btn-secondary mt-3 w-full text-sm">
                     Phân công
@@ -235,9 +235,9 @@ export default function SupDashboardClient({
             ]}
           />
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {evalList.length === 0 && (
-              <div className="card md:col-span-2">
+              <div className="card md:col-span-2 2xl:col-span-3">
                 <EmptyState title={emptyTitle} />
               </div>
             )}
@@ -275,11 +275,11 @@ function stageLabel(e: Employee, p: Progress): string {
 }
 
 function StatusBadge({ done, assigned }: { done: boolean; assigned: boolean }) {
-  if (done) return <span className="badge shrink-0 bg-slate-100 text-slate-600">Hoàn tất 3 tuần</span>;
+  if (done) return <span className="badge shrink-0 bg-neutral-100 text-neutral-600">Hoàn tất 3 tuần</span>;
   return assigned ? (
     <span className="badge shrink-0 bg-green-100 text-green-800">Đã phân công</span>
   ) : (
-    <span className="badge shrink-0 bg-orange-100 text-ghn-700">Chưa phân công</span>
+    <span className="badge shrink-0 bg-amber-100 text-amber-800">Chưa phân công</span>
   );
 }
 
@@ -304,8 +304,8 @@ function FilterPills<T extends string>({
           onClick={() => onChange(opt.value)}
           className={`min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition duration-150 ${
             value === opt.value
-              ? "border-ghn-600 bg-ghn-600 text-white shadow-soft"
-              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              ? "border-brand-600 bg-brand-600 text-white shadow-soft"
+              : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
           }`}
         >
           {opt.label} ({opt.count})
@@ -317,9 +317,9 @@ function FilterPills<T extends string>({
 
 function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`card card-interactive p-4 ${highlight ? "border-ghn-200 bg-ghn-50" : ""}`}>
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${highlight ? "text-ghn-700" : "text-slate-900"}`}>{value}</p>
+    <div className={`card card-interactive p-4 ${highlight ? "border-brand-200 bg-brand-50" : ""}`}>
+      <p className="text-sm text-neutral-500">{label}</p>
+      <p className={`mt-1 font-display text-2xl font-bold ${highlight ? "text-brand-700" : "text-neutral-900"}`}>{value}</p>
     </div>
   );
 }

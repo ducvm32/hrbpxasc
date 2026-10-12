@@ -40,7 +40,7 @@ export default function AddEmployeeForm({ today }: { today: string }) {
       action={formAction}
       className="card grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5"
     >
-      <h2 className="font-semibold text-slate-800 sm:col-span-2 lg:col-span-5">Thêm nhân viên mới</h2>
+      <h2 className="font-semibold text-neutral-800 sm:col-span-2 lg:col-span-5">Thêm nhân viên mới</h2>
       <div>
         <label className="label" htmlFor={`${uid}-ho_ten`}>
           Họ tên
@@ -94,7 +94,7 @@ export default function AddEmployeeForm({ today }: { today: string }) {
         {state?.success && <p className="alert-success mb-2">Đã thêm nhân viên mới. Sup phụ trách Ca này sẽ thấy NV ngay.</p>}
         <div className="flex flex-wrap items-center gap-3">
           <SubmitBtn />
-          <p className="text-xs text-slate-500">NV mới bắt đầu ở Tuần 1, tự chuyển tuần theo ngày nhận việc.</p>
+          <p className="text-xs text-neutral-500">NV mới bắt đầu ở Tuần 1, tự chuyển tuần theo ngày nhận việc.</p>
         </div>
       </div>
     </form>

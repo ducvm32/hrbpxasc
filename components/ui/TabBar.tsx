@@ -16,7 +16,7 @@ export default function TabBar<T extends string>({
     <div
       role="tablist"
       aria-label={label}
-      className="mb-4 flex max-w-full gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 text-sm font-medium sm:inline-flex"
+      className="mb-4 flex max-w-full gap-1 overflow-x-auto rounded-lg bg-neutral-100 p-1 text-sm font-medium sm:inline-flex"
     >
       {tabs.map((t) => (
         <button

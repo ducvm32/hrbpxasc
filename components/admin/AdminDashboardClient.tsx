@@ -31,18 +31,18 @@ function CaCheckboxes({ legend, defaultValues = [] as string[] }: { legend: stri
   return (
     <fieldset>
       <legend className="label">{legend}</legend>
-      <div className="grid grid-cols-1 gap-1 rounded-lg border border-slate-200 p-2 min-[400px]:grid-cols-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-1 rounded-lg border border-neutral-200 p-2 min-[400px]:grid-cols-2 sm:grid-cols-3">
         {CA_LIST.map((ca) => (
           <label
             key={ca}
-            className="flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-2 text-sm text-slate-700 hover:bg-slate-50"
+            className="flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-2 text-sm text-neutral-700 hover:bg-neutral-50"
           >
             <input
               type="checkbox"
               name="ca_phu_trach"
               value={ca}
               defaultChecked={defaultValues.includes(ca)}
-              className="h-4 w-4 shrink-0 rounded border-slate-300 accent-ghn-600"
+              className="h-4 w-4 shrink-0 rounded border-neutral-300 accent-brand-600"
             />
             {ca}
           </label>
@@ -91,7 +91,7 @@ function AddAccountForm() {
 
   return (
     <form ref={formRef} action={formAction} className="card space-y-4 p-4">
-      <h2 className="font-semibold text-slate-800">Thêm tài khoản Sup / HRBP mới</h2>
+      <h2 className="font-semibold text-neutral-800">Thêm tài khoản Sup / HRBP mới</h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="label" htmlFor={`${uid}-role`}>
@@ -389,7 +389,7 @@ export default function AdminDashboardClient({
 
   function roleBadge(a: Account) {
     return (
-      <span className={`badge ${a.role === "sup" ? "bg-ghn-50 text-ghn-700" : "bg-slate-100 text-slate-600"}`}>
+      <span className={`badge ${a.role === "sup" ? "bg-brand-50 text-brand-700" : "bg-neutral-100 text-neutral-600"}`}>
         {a.role === "sup" ? "Sup" : "HRBP"}
       </span>
     );
@@ -400,18 +400,18 @@ export default function AdminDashboardClient({
     return names.length > 0 ? (
       names.join(", ")
     ) : (
-      <span className="badge bg-orange-100 text-ghn-700">Chưa có Sup</span>
+      <span className="badge bg-amber-100 text-amber-800">Chưa có Sup</span>
     );
   }
 
   const emptySearch = <EmptyState title="Không có kết quả khớp từ khoá tìm kiếm" />;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+    <main className="container-fluid pb-6 sm:pb-8">
       <DashboardHeader
         title={`Xin chào, ${adminName}`}
         subtitle="Quản trị hệ thống — phân quyền và dữ liệu nhân viên."
-        roleBadge={<span className="badge bg-slate-900 text-white">System Admin</span>}
+        roleBadge={<span className="badge bg-neutral-900 text-white">System Admin</span>}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -428,7 +428,7 @@ export default function AdminDashboardClient({
           <SearchBox
             value={search}
             onChange={setSearch}
-            placeholder={tab === "accounts" ? "Tìm theo tên, mã, email..." : "Tìm theo họ tên hoặc mã NV..."}
+            placeholder={tab === "accounts" ? "Tìm theo tên, mã, email" : "Tìm theo tên hoặc mã NV"}
           />
         </div>
       </div>
@@ -451,14 +451,14 @@ export default function AdminDashboardClient({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {filteredAccounts.map((a) => (
                   <tr key={`${a.role}-${a.id}`}>
-                    <td className="px-4 py-3 font-medium text-slate-800">{a.ho_ten}</td>
+                    <td className="px-4 py-3 font-medium text-neutral-800">{a.ho_ten}</td>
                     <td className="px-4 py-3">{a.email}</td>
-                    <td className="px-4 py-3 text-slate-500">{a.id}</td>
+                    <td className="px-4 py-3 text-neutral-500">{a.id}</td>
                     <td className="px-4 py-3">{roleBadge(a)}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600">
+                    <td className="px-4 py-3 text-xs text-neutral-600">
                       {a.role === "sup" ? a.ca_phu_trach?.join(", ") : "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -477,15 +477,15 @@ export default function AdminDashboardClient({
               <li key={`${a.role}-${a.id}`} className="card p-4 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-800">{a.ho_ten}</p>
-                    <p className="break-all text-xs text-slate-500">
+                    <p className="font-medium text-neutral-800">{a.ho_ten}</p>
+                    <p className="break-all text-xs text-neutral-500">
                       {a.id} · {a.email}
                     </p>
                   </div>
                   {roleBadge(a)}
                 </div>
                 {a.role === "sup" && (
-                  <p className="mt-2 text-xs text-slate-600">Ca: {a.ca_phu_trach?.join(", ") || "—"}</p>
+                  <p className="mt-2 text-xs text-neutral-600">Ca: {a.ca_phu_trach?.join(", ") || "—"}</p>
                 )}
                 <div className={`mt-3 grid gap-2 ${a.role === "sup" ? "grid-cols-3" : "grid-cols-2"}`}>
                   {accountActions(a)}
@@ -514,17 +514,17 @@ export default function AdminDashboardClient({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {filteredEmployees.map((e) => (
                   <tr key={e.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                      <p className="text-xs text-slate-500">{e.ma_nv}</p>
+                      <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                      <p className="text-xs text-neutral-500">{e.ma_nv}</p>
                       {!e.sdt && <span className="badge mt-1 bg-amber-100 text-amber-800">Thiếu SĐT</span>}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       {e.ca}
-                      {e.la_kpi_14ngay && <span className="badge ml-1 bg-ghn-50 text-ghn-700">KPI 14N</span>}
+                      {e.la_kpi_14ngay && <span className="badge ml-1 bg-brand-50 text-brand-700">KPI 14N</span>}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">{formatDate(e.ngay_nhan_viec)}</td>
                     <td className="px-4 py-3">{supCell(e.ca)}</td>
@@ -547,19 +547,19 @@ export default function AdminDashboardClient({
           <ul className="space-y-3 md:hidden">
             {filteredEmployees.map((e) => (
               <li key={e.id} className="card p-4 text-sm">
-                <p className="font-medium text-slate-800">{e.ho_ten}</p>
-                <p className="text-xs text-slate-500">
+                <p className="font-medium text-neutral-800">{e.ho_ten}</p>
+                <p className="text-xs text-neutral-500">
                   {e.ma_nv} · {e.ca}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {e.la_kpi_14ngay && <span className="badge bg-ghn-50 text-ghn-700">KPI 14N</span>}
+                  {e.la_kpi_14ngay && <span className="badge bg-brand-50 text-brand-700">KPI 14N</span>}
                   {!e.sdt && <span className="badge bg-amber-100 text-amber-800">Thiếu SĐT</span>}
                 </div>
                 <dl className="mt-2 grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5">
-                  <dt className="text-slate-500">Nhận việc</dt>
-                  <dd className="text-slate-800">{formatDate(e.ngay_nhan_viec)}</dd>
-                  <dt className="text-slate-500">Sup</dt>
-                  <dd className="text-slate-800">{supCell(e.ca)}</dd>
+                  <dt className="text-neutral-500">Nhận việc</dt>
+                  <dd className="text-neutral-800">{formatDate(e.ngay_nhan_viec)}</dd>
+                  <dt className="text-neutral-500">Sup</dt>
+                  <dd className="text-neutral-800">{supCell(e.ca)}</dd>
                 </dl>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button onClick={() => setEditEmployee(e)} className="btn-secondary text-xs">

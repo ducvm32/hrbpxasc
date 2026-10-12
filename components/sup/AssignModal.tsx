@@ -77,20 +77,20 @@ function JobTimePicker({
   return (
     <fieldset>
       <legend className="label">
-        Công việc Tuần {tuan} <span className="font-normal text-slate-500">(chọn 1 hoặc nhiều, ghi giờ hướng dẫn cho từng việc)</span>
+        Công việc Tuần {tuan} <span className="font-normal text-neutral-500">(chọn 1 hoặc nhiều, ghi giờ hướng dẫn cho từng việc)</span>
       </legend>
-      <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+      <div className="space-y-2 rounded-lg border border-neutral-200 p-3">
         {jobs.map((j) => {
           const checked = j.value in times;
           return (
-            <div key={j.value} className="border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+            <div key={j.value} className="border-b border-neutral-100 pb-2 last:border-0 last:pb-0">
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-                <label className="flex min-h-10 flex-1 cursor-pointer items-center gap-2.5 text-sm font-medium text-slate-800">
+                <label className="flex min-h-10 flex-1 cursor-pointer items-center gap-2.5 text-sm font-medium text-neutral-800">
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggle(j.value)}
-                    className="h-5 w-5 shrink-0 rounded border-slate-300 accent-ghn-600"
+                    className="h-5 w-5 shrink-0 rounded border-neutral-300 accent-brand-600"
                   />
                   {j.value}
                 </label>
@@ -104,13 +104,13 @@ function JobTimePicker({
                   />
                 )}
               </div>
-              <p className="ml-7 mt-0.5 text-xs text-slate-500">{j.mota}</p>
+              <p className="ml-7 mt-0.5 text-xs text-neutral-500">{j.mota}</p>
             </div>
           );
         })}
       </div>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-neutral-500">
         Tổng hợp: {thoiGianValue || "— chưa chọn công việc nào —"}
       </p>
       <p className="mt-1 text-xs text-amber-700">
@@ -159,7 +159,7 @@ export default function AssignModal({
               aria-pressed={tuan === w}
               onClick={() => setTuan(w as Tuan)}
               className={`min-h-10 rounded-lg px-3 py-1.5 text-sm font-medium transition duration-150 ${
-                tuan === w ? "bg-ghn-600 text-white shadow-soft" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                tuan === w ? "bg-brand-600 text-white shadow-soft" : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
               Tuần {w}
