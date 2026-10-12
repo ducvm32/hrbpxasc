@@ -13,6 +13,10 @@ services:
       # trong mã nguồn, cho phép giả mạo cookie phiên đăng nhập. Thiếu biến
       # này thì app chặn khởi động (xem lib/auth.ts).
       - SESSION_SECRET=${SESSION_SECRET:?Cần đặt SESSION_SECRET trong file .env trước khi chạy}
+      # Bật cờ Secure cho cookie phiên đăng nhập khi triển khai thật có HTTPS
+      # (VD domain hrbpxasc.xyz). Thiếu biến này thì cookie phiên bị gửi được
+      # qua cả HTTP không mã hoá dù domain đã có HTTPS.
+      - COOKIE_SECURE=${COOKIE_SECURE:-false}
       # Google OAuth 2.0 — bắt buộc để Admin/Sup/HRBP đăng nhập. Tạo OAuth
       # client trên Google Cloud Console (APIs & Services > Credentials),
       # loại "Web application", redirect URI phải khớp SSO_REDIRECT_URI bên dưới.
@@ -21,6 +25,10 @@ services:
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
       # Domain Google Workspace được phép đăng nhập
       - GOOGLE_HD_DOMAIN=${GOOGLE_HD_DOMAIN:-ghn.vn}
+      # reCAPTCHA v2 — chặn bot vét cạn mã NV ở form đăng nhập Nhân Viên. Để
+      # trống thì tính năng tắt hoàn toàn (xem .env.example).
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY:-}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-}
     volumes:
       - ghn_data:/app/data
       - ghn_uploads:/app/public/uploads

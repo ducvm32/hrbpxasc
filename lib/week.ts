@@ -31,3 +31,11 @@ export function allowedWeek(ngay_nhan_viec: string, submittedWeeks: Tuan[]): Tua
   if (nextSequential > dueWeek) return 0; // tuần kế tiếp chưa tới hạn theo lịch
   return nextSequential as Tuan;
 }
+
+/** Giai đoạn onboarding kéo dài 3 tuần = 21 ngày tính từ ngày nhận việc. */
+export const ONBOARDING_DAYS = 21;
+
+/** Đã qua hết 3 tuần onboarding (ngày 22 trở đi). */
+export function isOnboardingDone(days: number): boolean {
+  return days > ONBOARDING_DAYS;
+}

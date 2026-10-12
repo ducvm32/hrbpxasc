@@ -27,6 +27,7 @@ export interface Employee {
   id: string;
   ho_ten: string;
   ma_nv: string;
+  sdt: string; // số điện thoại — 4 số cuối dùng làm yếu tố thứ 2 khi đăng nhập
   ca: string;
   ngay_nhan_viec: string; // ISO date (yyyy-MM-dd)
   nguoi_huong_dan: string | null;

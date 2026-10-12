@@ -1,7 +1,7 @@
 # HDSD — Hướng Dẫn Sử Dụng App "Gắn Nhân Viên & Đánh Giá Onboarding 3 Tuần"
 
 App dùng để: HRBP thêm nhân viên mới → toàn bộ Sup phụ trách đúng ca của nhân
-viên đều thấy và cùng quản lý (phân công người kèm cặp/khu vực/công việc) →
+viên đều thấy và cùng quản lý (phân công người kèm cặp/công việc) →
 theo dõi & đánh giá nhân viên trong 3 tuần đầu (phục vụ KPI giữ người 14 ngày).
 
 Truy cập app tại: **http://localhost:3000** (hoặc địa chỉ do IT cung cấp nếu đã
@@ -15,7 +15,7 @@ Khi mở app, bạn sẽ thấy màn đăng nhập với 2 chế độ (toggle �
 
 | Chế độ | Dành cho | Cách đăng nhập |
 |---|---|---|
-| **Nhân Viên** | Nhân viên mới | Chỉ gõ **Mã NV**, không cần mật khẩu (nhân viên không có email công ty) |
+| **Nhân Viên** | Nhân viên mới | Gõ **Mã NV** + **4 số cuối SĐT** (không cần mật khẩu, nhân viên không có email công ty) |
 | **Quản Trị (Sup / HRBP / Admin)** | Sup, HRBP, Admin | Bấm **Đăng Nhập bằng Google** — dùng tài khoản Google Workspace `@ghn.vn` |
 
 > Sup/HRBP/Admin đăng nhập bằng tài khoản Google công ty (`@ghn.vn`), không
@@ -26,6 +26,12 @@ Khi mở app, bạn sẽ thấy màn đăng nhập với 2 chế độ (toggle �
 Sau khi đăng nhập, app tự đưa bạn vào đúng màn hình theo vai trò — không cần
 chọn thêm.
 
+> Mã NV một mình không còn đủ để đăng nhập (trước đây ai biết mã NV của người
+> khác cũng đăng nhập được thay họ) — giờ cần đúng cả **4 số cuối SĐT** đã
+> khai khi HRBP thêm nhân viên. Nhân viên có sẵn từ trước khi có bản cập nhật
+> này chưa có SĐT trong hệ thống sẽ không đăng nhập được cho đến khi HRBP/Admin
+> bổ sung SĐT qua màn Sửa nhân viên.
+
 ---
 
 ## 2. Dành cho HRBP
@@ -34,12 +40,17 @@ chọn thêm.
 
 ### Tab "Nhân viên"
 
-- **Thêm nhân viên mới**: điền Họ tên, Mã NV, chọn Ca làm việc, Ngày nhận việc
+- **Thêm nhân viên mới**: điền Họ tên, Mã NV, Số điện thoại (bắt buộc — dùng
+  làm yếu tố thứ 2 khi nhân viên đăng nhập), chọn Ca làm việc, Ngày nhận việc
   (mặc định là hôm nay). Nhấn **"Thêm nhân viên"**.
   - Nhân viên vừa thêm sẽ **tự động xuất hiện trong team của mọi Sup phụ trách
     đúng ca đó** — không cần ai "nhận" thủ công.
-- **Danh sách toàn bộ nhân viên**: xem Ca, Ngày nhận việc, (các) Sup phụ trách,
-  Người hướng dẫn, có thuộc nhóm **KPI 14 ngày** hay không (cột "KPI 14N").
+- **Danh sách toàn bộ nhân viên**: xem Ca (kèm nhãn **KPI 14N** nếu thuộc nhóm
+  KPI giữ người 14 ngày), Ngày nhận việc + tuần hiện tại, (các) Sup phụ trách,
+  Người hướng dẫn, Công việc Sup đã gán, tiến độ đánh giá. Ô **tìm kiếm** phía
+  trên bảng lọc nhanh theo họ tên / mã NV (gõ không dấu cũng được). NV thiếu
+  SĐT có nhãn **"Thiếu SĐT"** — cần bổ sung qua nút **Sửa** thì NV mới đăng
+  nhập được. Trên điện thoại, danh sách hiển thị dạng thẻ thay vì bảng.
   - Nếu chưa có Sup nào được cấu hình phụ trách ca đó, cột này hiện badge
     **"Chưa có Sup"** — Admin cần vào trang Admin để gán Ca phụ trách cho ít
     nhất 1 Sup.
@@ -48,8 +59,9 @@ chọn thêm.
 
 - Xem toàn bộ **đánh giá của Sup** và **tự đánh giá của nhân viên** cho tất cả
   nhân viên trong hệ thống (HRBP là vai trò duy nhất xem được cả hai loại).
-- Nhấn **"Xuất Excel"** (góc trên bên phải) để tải file `.xlsx` gồm 3 sheet:
-  danh sách nhân viên, đánh giá của Sup, tự đánh giá của nhân viên.
+- Nhấn **"Xuất Excel"** (góc trên bên phải) để tải file `.xlsx` gồm các sheet:
+  danh sách nhân viên, đánh giá của Sup, tự đánh giá của nhân viên, tổng hợp
+  tự đánh giá, cảnh báo nguy cơ nghỉ việc.
 
 ---
 
@@ -63,20 +75,25 @@ chọn thêm.
   bên dưới — không cần "nhận" hay claim riêng. Nếu ca đó có nhiều Sup, tất cả
   đều thấy chung danh sách này và ai cũng có thể phân công/đánh giá.
 
-### Tab "Danh sách & Phân công 14 ngày"
+### Tab "Danh sách & Phân công"
 
-- Bảng liệt kê toàn bộ NV thuộc (các) ca bạn phụ trách.
+- Bảng liệt kê toàn bộ NV thuộc (các) ca bạn phụ trách, lọc nhanh theo
+  **Chưa phân công / Đã phân công tuần này / Hoàn tất 3 tuần**, và ô tìm kiếm
+  theo tên / mã NV. NV đã qua 3 tuần được đánh dấu **"Hoàn tất 3 tuần"** và xếp
+  xuống cuối danh sách.
 - Nhấn **"Phân công"** ở dòng NV để mở form thiết lập:
   - **Người trực tiếp hướng dẫn**
-  - **Khu vực / Line**
-  - **Công việc** (dropdown tự lọc: NV ca Inout chỉ thấy công việc nhóm Inout,
-    NV ca Sort chỉ thấy công việc nhóm Sort)
-  - **Thời gian hướng dẫn**
+  - **Công việc** — tick chọn 1 hoặc nhiều (danh sách tự lọc: NV ca Inout chỉ
+    thấy công việc nhóm Inout, NV ca Sort chỉ thấy nhóm Sort), mỗi việc ghi
+    giờ hướng dẫn riêng. **Bắt buộc chọn ít nhất 1 công việc.**
   - Ghi chú thêm
   - Chọn tab **Tuần 1 / Tuần 2 / Tuần 3** ở trên form để phân công riêng cho
     từng tuần (có thể chuẩn bị trước công việc của tuần sau).
 
-### Tab "Form đánh giá cuối ca"
+- Nếu lưu bị lỗi (VD chưa chọn công việc), form **giữ nguyên và hiện thông
+  báo lỗi** — chỉ tự đóng khi đã lưu thành công.
+
+### Tab "Đánh giá cuối ca"
 
 - Mỗi NV trong team có 1 form đánh giá riêng, **chỉ mở đúng tuần hiện tại**
   (tính từ ngày nhận việc của NV). Nếu chưa tới hạn hoặc đã đánh giá đủ 3 tuần,
@@ -90,11 +107,12 @@ chọn thêm.
 
 ## 4. Dành cho Nhân viên mới
 
-Đăng nhập bằng **Mã NV** do HRBP cấp. Màn hình hiển thị:
+Đăng nhập bằng **Mã NV** do HRBP cấp + **4 số cuối SĐT** đã khai với HRBP.
+Màn hình hiển thị:
 
 - Thông tin cá nhân: đang ở ngày thứ mấy / tuần mấy kể từ ngày nhận việc, (các)
   Sup phụ trách, Người hướng dẫn.
-- **Phân công hiện tại**: khu vực/line, công việc, thời gian hướng dẫn, ghi chú
+- **Phân công hiện tại**: công việc kèm giờ hướng dẫn của từng việc, ghi chú
   từ Sup (nếu chưa Sup nào phân công cụ thể, app sẽ báo "Chưa có Sup nào phân
   công công việc cụ thể cho bạn").
 - **Form tự đánh giá**: chỉ mở đúng tuần hiện tại (giống cơ chế của Sup nhưng
@@ -132,7 +150,7 @@ chọn thêm.
 
 | Tình huống | Cách xử lý |
 |---|---|
-| Nhân viên gõ Mã NV nhưng báo "Không tìm thấy" | HRBP chưa thêm nhân viên này vào hệ thống, hoặc gõ sai mã — kiểm tra lại ở tab "Nhân viên" |
+| Nhân viên báo "Mã NV hoặc 4 số cuối SĐT không đúng" | HRBP chưa thêm nhân viên này vào hệ thống, gõ sai mã/SĐT, hoặc SĐT trong hệ thống chưa được cập nhật — kiểm tra/sửa ở tab "Nhân viên" (HRBP thêm mới) hoặc trang Admin (sửa SĐT nhân viên có sẵn) |
 | NV mới không thấy hiện trong bảng của Sup | Kiểm tra Ca của NV có đúng (các) ca Sup đang phụ trách không (Admin cấu hình ở trang Admin) |
 | Form đánh giá bị mờ/không cho nhập | Chưa tới hạn tuần đánh giá tiếp theo, hoặc đã hoàn tất đủ 3 tuần — chờ đúng mốc ngày hoặc không cần đánh giá thêm |
 | Sup không xuất được Excel / không thấy nút Xuất Excel | Chức năng này chỉ dành cho HRBP, Sup không có quyền này |

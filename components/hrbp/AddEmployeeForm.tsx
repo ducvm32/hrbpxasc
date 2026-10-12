@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useFormState, useFormStatus } from "react-dom";
 import { addEmployeeAction, type ActionResult } from "@/lib/actions";
@@ -25,6 +25,7 @@ export default function AddEmployeeForm({ today }: { today: string }) {
   const router = useRouter();
   const [state, formAction] = useFormState(callAdd, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const uid = useId();
 
   useEffect(() => {
     if (state?.success) {
@@ -39,17 +40,38 @@ export default function AddEmployeeForm({ today }: { today: string }) {
       action={formAction}
       className="card grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5"
     >
+      <h2 className="font-semibold text-slate-800 sm:col-span-2 lg:col-span-5">Thêm nhân viên mới</h2>
       <div>
-        <label className="label">Họ tên</label>
-        <input name="ho_ten" required className="input" placeholder="Nguyễn Văn A" />
+        <label className="label" htmlFor={`${uid}-ho_ten`}>
+          Họ tên
+        </label>
+        <input id={`${uid}-ho_ten`} name="ho_ten" required className="input" placeholder="Nguyễn Văn A" />
       </div>
       <div>
-        <label className="label">Mã NV</label>
-        <input name="ma_nv" required className="input" placeholder="4001234" />
+        <label className="label" htmlFor={`${uid}-ma_nv`}>
+          Mã NV
+        </label>
+        <input id={`${uid}-ma_nv`} name="ma_nv" required className="input" placeholder="4001234" />
       </div>
       <div>
-        <label className="label">Ca làm việc</label>
-        <select name="ca" required className="input" defaultValue="">
+        <label className="label" htmlFor={`${uid}-sdt`}>
+          Số điện thoại
+        </label>
+        <input
+          id={`${uid}-sdt`}
+          name="sdt"
+          type="tel"
+          required
+          className="input"
+          placeholder="0901234567"
+          autoComplete="off"
+        />
+      </div>
+      <div>
+        <label className="label" htmlFor={`${uid}-ca`}>
+          Ca làm việc
+        </label>
+        <select id={`${uid}-ca`} name="ca" required className="input" defaultValue="">
           <option value="" disabled>
             -- Chọn ca --
           </option>
@@ -61,18 +83,19 @@ export default function AddEmployeeForm({ today }: { today: string }) {
         </select>
       </div>
       <div>
-        <label className="label">Ngày nhận việc</label>
-        <input type="date" name="ngay_nhan_viec" defaultValue={today} className="input" />
-      </div>
-      <div>
-        <label className="label">Giai đoạn đánh giá</label>
-        <input value="Tuần 1 (mặc định)" disabled className="input bg-slate-50 text-slate-400" />
+        <label className="label" htmlFor={`${uid}-ngay_nhan_viec`}>
+          Ngày nhận việc
+        </label>
+        <input type="date" id={`${uid}-ngay_nhan_viec`} name="ngay_nhan_viec" defaultValue={today} className="input" />
       </div>
 
       <div className="sm:col-span-2 lg:col-span-5">
         {state?.error && <p className="alert-error mb-2">{state.error}</p>}
-        {state?.success && <p className="alert-success mb-2">Đã thêm nhân viên mới vào POOL.</p>}
-        <SubmitBtn />
+        {state?.success && <p className="alert-success mb-2">Đã thêm nhân viên mới. Sup phụ trách Ca này sẽ thấy NV ngay.</p>}
+        <div className="flex flex-wrap items-center gap-3">
+          <SubmitBtn />
+          <p className="text-xs text-slate-500">NV mới bắt đầu ở Tuần 1, tự chuyển tuần theo ngày nhận việc.</p>
+        </div>
       </div>
     </form>
   );

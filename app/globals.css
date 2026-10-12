@@ -55,19 +55,19 @@ body {
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ghn px-4 py-2 font-medium text-white shadow-soft transition duration-150 ease-out hover:bg-ghn-600 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-ghn-600 px-4 py-2 font-medium text-white shadow-soft transition duration-150 ease-out hover:bg-ghn-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 shadow-soft transition duration-150 ease-out hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 shadow-soft transition duration-150 ease-out hover:border-slate-400 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
 }
 
 .btn-danger {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 transition duration-150 ease-out hover:border-red-300 hover:bg-red-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-medium text-red-600 transition duration-150 ease-out hover:border-red-300 hover:bg-red-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 .input {
-  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 transition duration-150 ease-out focus:border-ghn focus:outline-none focus:ring-4 focus:ring-ghn/10;
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition duration-150 ease-out focus:border-ghn focus:outline-none focus:ring-4 focus:ring-ghn/10;
 }
 
 .label {
@@ -79,15 +79,15 @@ body {
 }
 
 .section-title {
-  @apply mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500;
+  @apply mb-2 text-sm font-semibold uppercase tracking-wide text-slate-600;
 }
 
 .tab-pill {
-  @apply relative rounded-md px-4 py-2 text-sm font-medium text-slate-500 transition duration-150 ease-out hover:text-slate-700;
+  @apply relative shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition duration-150 ease-out hover:text-slate-800 sm:px-4;
 }
 
 .tab-pill-active {
-  @apply bg-white text-ghn shadow-soft;
+  @apply bg-white text-ghn-700 shadow-soft;
 }
 
 .table-shell {

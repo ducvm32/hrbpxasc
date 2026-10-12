@@ -1,6 +1,6 @@
 # GHN Onboarding — Gắn Nhân Viên & Đánh Giá 3 Tuần
 
-Web app quản lý gắn nhân viên mới vào Sup, phân công người kèm cặp/khu vực/công việc,
+Web app quản lý gắn nhân viên mới vào Sup, phân công người kèm cặp/công việc,
 và đánh giá onboarding trong 3 tuần đầu (gắn KPI giữ người 14 ngày), theo đặc tả trong
 `require.md`.
 
@@ -77,10 +77,10 @@ Nguyễn Minh Thiện, Ca 3 Inout). Không còn mật khẩu demo cho 3 vai trò
 2. Đăng xuất, đăng nhập 1 Sup phụ trách đúng ca đó qua Google → nhân viên đã
    tự động xuất hiện trong bảng team (mọi Sup phụ trách `Ca 3 Inout` đều thấy
    chung, không cần "Nhận" riêng).
-3. Ở tab "Danh sách & Phân công 14 ngày", bấm "Phân công" để chọn người hướng dẫn,
-   khu vực/line, công việc (dropdown lọc theo Inout/Sort) và thời gian hướng dẫn
-   cho từng tuần.
-4. Ở tab "Form đánh giá cuối ca", Sup đánh giá nhân viên — form chỉ mở đúng theo
+3. Ở tab "Danh sách & Phân công", bấm "Phân công" để chọn người hướng dẫn,
+   công việc (lọc theo Inout/Sort, bắt buộc ít nhất 1) và giờ hướng dẫn cho
+   từng việc, theo từng tuần.
+4. Ở tab "Đánh giá cuối ca", Sup đánh giá nhân viên — form chỉ mở đúng theo
    tuần hiện tại tính từ ngày nhận việc (không cho đánh giá trước hạn).
 5. Đăng nhập bằng Mã NV vừa tạo để xem lịch/phân công và tự đánh giá (form tương
    tự, độc lập tiến trình với đánh giá của Sup).

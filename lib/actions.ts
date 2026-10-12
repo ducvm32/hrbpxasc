@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as XLSX from "xlsx";
 import { readDB, mutateDB, todayISO } from "./db";
 import { getSession, setSessionCookie, clearSessionCookie } from "./auth";
+import { verifyRecaptcha } from "./recaptcha";
 import {
   CA_LIST,
   isKpiCa,
@@ -21,7 +22,7 @@ import {
   MUC_DO_HUONG_DAN_LABEL,
   MUC_DO_HUONG_DAN_OPTIONS,
 } from "./constants";
-import { getAreaReportByWeek, getRiskFlags, getSelfEvalSummary } from "./queries";
+import { getRiskFlags, getSelfEvalSummary } from "./queries";
 import { allowedWeek } from "./week";
 import type {
   DungCongViec,
@@ -49,14 +50,35 @@ function requireRole(roles: Role[]): SessionData {
 
 export type ActionResult = { success?: true; error?: string; [k: string]: unknown };
 
+// Chỉ giữ lại chữ số — cho phép HRBP gõ SĐT có khoảng trắng/dấu gạch ngang.
+function normalizePhone(raw: string): string {
+  return raw.replace(/\D/g, "");
+}
+
 // ---------- Auth ----------
 
 export async function loginEmployeeAction(formData: FormData): Promise<ActionResult | void> {
   const ma_nv = String(formData.get("ma_nv") || "").trim();
-  if (!ma_nv) return { error: "Vui lòng nhập mã nhân viên" };
+  const sdt_4so = String(formData.get("sdt_4so") || "").trim();
+  if (!ma_nv || !sdt_4so) return { error: "Vui lòng nhập đầy đủ Mã NV và 4 số cuối SĐT" };
+  if (!/^\d{4}$/.test(sdt_4so)) return { error: "4 số cuối SĐT phải gồm đúng 4 chữ số" };
+
+  const recaptchaToken = String(formData.get("g-recaptcha-response") || "");
+  if (!(await verifyRecaptcha(recaptchaToken))) {
+    return { error: "Vui lòng xác nhận \"Tôi không phải người máy\" trước khi đăng nhập" };
+  }
+
+  // Thông báo lỗi giống hệt nhau dù sai Mã NV hay sai SĐT — tránh lộ thông
+  // tin cho kẻ dò mã NV biết mã nào tồn tại trong hệ thống (kết hợp cùng
+  // reCAPTCHA để chặn dò vét cạn).
+  const genericError = "Mã NV hoặc 4 số cuối SĐT không đúng. Vui lòng liên hệ HRBP.";
+
   const db = readDB();
   const emp = db.employees.find((e) => e.ma_nv === ma_nv);
-  if (!emp) return { error: "Không tìm thấy mã nhân viên. Vui lòng liên hệ HRBP." };
+  if (!emp) return { error: genericError };
+  const last4 = normalizePhone(emp.sdt).slice(-4);
+  if (!last4 || last4 !== sdt_4so) return { error: genericError };
+
   setSessionCookie({ role: "nhanvien", id: emp.id, ho_ten: emp.ho_ten, ma_nv: emp.ma_nv });
   redirect("/employee");
 }
@@ -76,10 +98,14 @@ export async function addEmployeeAction(formData: FormData): Promise<ActionResul
   const session = requireRole(["hrbp"]);
   const ho_ten = String(formData.get("ho_ten") || "").trim();
   const ma_nv = String(formData.get("ma_nv") || "").trim();
+  const sdt = normalizePhone(String(formData.get("sdt") || ""));
   const ca = String(formData.get("ca") || "");
   const ngay_nhan_viec = String(formData.get("ngay_nhan_viec") || "") || todayISO();
 
-  if (!ho_ten || !ma_nv || !ca) return { error: "Vui lòng nhập đầy đủ Họ tên, Mã NV và Ca làm việc" };
+  if (!ho_ten || !ma_nv || !ca || !sdt) {
+    return { error: "Vui lòng nhập đầy đủ Họ tên, Mã NV, SĐT và Ca làm việc" };
+  }
+  if (sdt.length < 9 || sdt.length > 11) return { error: "Số điện thoại không hợp lệ" };
   if (!(CA_LIST as readonly string[]).includes(ca)) return { error: "Ca làm việc không hợp lệ" };
 
   return mutateDB((db) => {
@@ -90,6 +116,7 @@ export async function addEmployeeAction(formData: FormData): Promise<ActionResul
       id: uuidv4(),
       ho_ten,
       ma_nv,
+      sdt,
       ca,
       ngay_nhan_viec,
       nguoi_huong_dan: null,
@@ -128,7 +155,6 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
       "Số ngày đã làm": days,
       "Sup phụ trách": supNamesForCa(e.ca),
       "Người hướng dẫn": e.nguoi_huong_dan ?? "",
-      "Khu vực / Line": e.khu_vuc_line ?? "",
       "KPI giữ người 14 ngày": e.la_kpi_14ngay ? "Có" : "",
     };
   });
@@ -168,15 +194,6 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
     };
   });
 
-  const areaReportSheet = getAreaReportByWeek().map((row) => ({
-    Ca: row.ca,
-    Tuần: row.tuan,
-    "Tổng NV": row.total,
-    "Khu vực chính": row.topArea ?? "",
-    "Số NV ở khu vực chính": row.topCount,
-    "Chi tiết khu vực": row.areas.map((a) => `${a.khu_vuc}: ${a.count}`).join(" | "),
-  }));
-
   const summary = getSelfEvalSummary();
   const selfEvalSummarySheet = [
     { "Chỉ số": "Tổng số lượt tự đánh giá", "Giá trị": summary.total },
@@ -213,7 +230,6 @@ export async function exportExcelBase64Action(): Promise<{ base64: string; filen
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(employeesSheet), "Nhan vien");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(supEvalSheet), "Danh gia Sup");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(selfEvalSheet), "Tu danh gia NV");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(areaReportSheet), "Bao cao khu vuc theo tuan");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(selfEvalSummarySheet), "Tong hop tu danh gia");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskSheet), "Canh bao nghi viec");
 
@@ -244,10 +260,13 @@ export async function saveAssignmentAction(formData: FormData): Promise<ActionRe
   const employee_id = String(formData.get("employee_id") || "");
   const tuan = Number(formData.get("tuan") || 1) as Tuan;
   const nguoi_huong_dan = String(formData.get("nguoi_huong_dan") || "").trim();
-  const khu_vuc_line = String(formData.get("khu_vuc_line") || "").trim();
   const cong_viec = String(formData.get("cong_viec") || "").trim();
   const thoi_gian_huong_dan = String(formData.get("thoi_gian_huong_dan") || "").trim();
   const sup_note = String(formData.get("sup_note") || "").trim();
+  if (![1, 2, 3].includes(tuan)) return { error: "Tuần không hợp lệ" };
+  // Không cho lưu phân công rỗng — trước đây lưu được bản ghi không có công
+  // việc nào, NV nhìn thấy thẻ "Phân công hiện tại" trống trơn.
+  if (!cong_viec) return { error: "Vui lòng chọn ít nhất 1 công việc cho NV" };
 
   return mutateDB((db) => {
     const emp = db.employees.find((e) => e.id === employee_id);
@@ -258,14 +277,12 @@ export async function saveAssignmentAction(formData: FormData): Promise<ActionRe
     }
 
     if (nguoi_huong_dan) emp.nguoi_huong_dan = nguoi_huong_dan;
-    if (khu_vuc_line) emp.khu_vuc_line = khu_vuc_line;
 
     const now = new Date().toISOString();
     let a = db.assignments.find((x) => x.employee_id === employee_id && x.tuan === tuan);
     if (a) {
-      a.cong_viec = cong_viec || a.cong_viec;
-      a.khu_vuc_line = khu_vuc_line || a.khu_vuc_line;
-      a.thoi_gian_huong_dan = thoi_gian_huong_dan || a.thoi_gian_huong_dan;
+      a.cong_viec = cong_viec;
+      a.thoi_gian_huong_dan = thoi_gian_huong_dan;
       a.sup_note = sup_note;
       a.updated_at = now;
     } else {
@@ -274,7 +291,7 @@ export async function saveAssignmentAction(formData: FormData): Promise<ActionRe
         employee_id,
         tuan,
         cong_viec,
-        khu_vuc_line,
+        khu_vuc_line: "", // trường cũ, đã bỏ khỏi UI — giữ cột NOT NULL trong DB
         thoi_gian_huong_dan,
         sup_note,
         created_at: now,
@@ -507,19 +524,21 @@ export async function deleteAccountAction(accountId: string, role: "sup" | "hrbp
   });
 }
 
-// ---------- Admin: quản lý nhân viên do HRBP tạo ----------
+// ---------- Admin/HRBP: quản lý nhân viên ----------
 
 export async function updateEmployeeAction(formData: FormData): Promise<ActionResult> {
-  requireRole(["admin"]);
+  requireRole(["admin", "hrbp"]);
   const employee_id = String(formData.get("employee_id") || "");
   const ho_ten = String(formData.get("ho_ten") || "").trim();
   const ma_nv = String(formData.get("ma_nv") || "").trim();
+  const sdt = normalizePhone(String(formData.get("sdt") || ""));
   const ca = String(formData.get("ca") || "");
   const ngay_nhan_viec = String(formData.get("ngay_nhan_viec") || "");
 
-  if (!ho_ten || !ma_nv || !ca || !ngay_nhan_viec) {
-    return { error: "Vui lòng nhập đầy đủ Họ tên, Mã NV, Ca làm việc và Ngày nhận việc" };
+  if (!ho_ten || !ma_nv || !sdt || !ca || !ngay_nhan_viec) {
+    return { error: "Vui lòng nhập đầy đủ Họ tên, Mã NV, SĐT, Ca làm việc và Ngày nhận việc" };
   }
+  if (sdt.length < 9 || sdt.length > 11) return { error: "Số điện thoại không hợp lệ" };
   if (!(CA_LIST as readonly string[]).includes(ca)) return { error: "Ca làm việc không hợp lệ" };
 
   return mutateDB((db) => {
@@ -530,6 +549,7 @@ export async function updateEmployeeAction(formData: FormData): Promise<ActionRe
     }
     emp.ho_ten = ho_ten;
     emp.ma_nv = ma_nv;
+    emp.sdt = sdt;
     emp.ca = ca;
     emp.ngay_nhan_viec = ngay_nhan_viec;
     emp.la_kpi_14ngay = isKpiCa(ca);
@@ -538,7 +558,7 @@ export async function updateEmployeeAction(formData: FormData): Promise<ActionRe
 }
 
 export async function deleteEmployeeAction(employeeId: string): Promise<ActionResult> {
-  requireRole(["admin"]);
+  requireRole(["admin", "hrbp"]);
   return mutateDB((db) => {
     const before = db.employees.length;
     db.employees = db.employees.filter((e) => e.id !== employeeId);

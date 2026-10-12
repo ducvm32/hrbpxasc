@@ -26,7 +26,10 @@ const config: Config = {
           100: "#FFE3D1",
           200: "#FFCBA8",
           500: "#F26522",
-          600: "#D9541A",
+          // 600/700 đủ tương phản ≥ 4.5:1 với chữ trắng (WCAG AA) — dùng cho nền
+          // nút chính và chữ nhấn; #F26522 gốc chỉ đạt ~3.1:1 nên chỉ dùng cho
+          // viền/điểm nhấn trang trí, không làm nền cho chữ nhỏ.
+          600: "#C2410C",
           700: "#B4440F",
         },
       },

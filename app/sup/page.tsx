@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getSupById, getTeamForSup, getAssignmentsForEmployee, employeeProgress } from "@/lib/queries";
 import SupDashboardClient from "@/components/sup/SupDashboardClient";
+import { isOnboardingDone } from "@/lib/week";
 import type { Assignment } from "@/lib/types";
 
 export default function SupPage() {
@@ -22,7 +23,8 @@ export default function SupPage() {
 
   const dueEvaluated = team.filter((e) => {
     const p = progressByEmployee[e.id];
-    return p.dueWeek !== 0 && p.supWeeksDone.includes(p.dueWeek);
+    // Chỉ tính NV còn trong 3 tuần onboarding — khớp mẫu số hiển thị trên dashboard.
+    return p.dueWeek !== 0 && !isOnboardingDone(p.days) && p.supWeeksDone.includes(p.dueWeek);
   }).length;
 
   return (

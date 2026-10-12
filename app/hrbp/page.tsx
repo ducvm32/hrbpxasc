@@ -7,7 +7,7 @@ import {
   getAllSupUsers,
   getAllSupEvaluations,
   getAllSelfEvaluations,
-  getAreaReportByWeek,
+  getAssignedJobByEmployeeId,
   getRiskFlags,
   getSelfEvalSummary,
 } from "@/lib/queries";
@@ -21,12 +21,12 @@ export default function HrbpPage() {
   const supUsers = getAllSupUsers();
   const supEvaluations = getAllSupEvaluations();
   const selfEvaluations = getAllSelfEvaluations();
-  const areaReport = getAreaReportByWeek();
   const selfEvalSummary = getSelfEvalSummary();
   const riskFlags = getRiskFlags();
   const currentWeekByEmployeeId = Object.fromEntries(
     employees.map((e) => [e.id, currentWeekOf(e)])
   );
+  const assignedJobByEmployeeId = getAssignedJobByEmployeeId();
 
   return (
     <HrbpDashboardClient
@@ -35,10 +35,10 @@ export default function HrbpPage() {
       supUsers={supUsers}
       supEvaluations={supEvaluations}
       selfEvaluations={selfEvaluations}
-      areaReport={areaReport}
       selfEvalSummary={selfEvalSummary}
       riskFlags={riskFlags}
       currentWeekByEmployeeId={currentWeekByEmployeeId}
+      assignedJobByEmployeeId={assignedJobByEmployeeId}
       today={todayISO()}
     />
   );

@@ -40,6 +40,7 @@ const SCHEMA_SQL = `
     id TEXT PRIMARY KEY,
     ho_ten TEXT NOT NULL,
     ma_nv TEXT NOT NULL,
+    sdt TEXT NOT NULL DEFAULT '',
     ca TEXT NOT NULL,
     ngay_nhan_viec TEXT NOT NULL,
     nguoi_huong_dan TEXT,
@@ -135,14 +136,15 @@ function persistAll(db: Database.Database, data: DB) {
 
     const insertEmp = db.prepare(
       `INSERT INTO employees
-        (id, ho_ten, ma_nv, ca, ngay_nhan_viec, nguoi_huong_dan, khu_vuc_line, tuan_hien_tai, la_kpi_14ngay, created_at, created_by)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+        (id, ho_ten, ma_nv, sdt, ca, ngay_nhan_viec, nguoi_huong_dan, khu_vuc_line, tuan_hien_tai, la_kpi_14ngay, created_at, created_by)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
     );
     for (const e of data.employees) {
       insertEmp.run(
         e.id,
         e.ho_ten,
         e.ma_nv,
+        e.sdt ?? "",
         e.ca,
         e.ngay_nhan_viec,
         e.nguoi_huong_dan,
@@ -326,6 +328,11 @@ function migrateSchema(db: Database.Database) {
   dropColumnIfExists(db, "admin_users", "password_hash");
   dropColumnIfExists(db, "sup_users", "password_hash");
   dropColumnIfExists(db, "hrbp_users", "password_hash");
+
+  // NV có sẵn từ trước khi thêm trường SĐT sẽ có sdt='' — không đăng nhập
+  // được nữa (loginEmployeeAction yêu cầu khớp 4 số cuối) cho đến khi
+  // HRBP/Admin bổ sung SĐT qua màn Sửa nhân viên.
+  ensureColumn(db, "employees", "sdt", "sdt TEXT NOT NULL DEFAULT ''");
 
   ensureColumn(db, "sup_evaluations", "dung_cong_viec", "dung_cong_viec TEXT NOT NULL DEFAULT 'dung_100'");
   ensureColumn(db, "sup_evaluations", "kha_nang_tiep_thu", "kha_nang_tiep_thu TEXT NOT NULL DEFAULT 'nhanh'");

@@ -108,55 +108,6 @@ export function currentWeekOf(employee: Employee): Tuan | 0 {
   return weekByDate(daysSinceStart(employee.ngay_nhan_viec));
 }
 
-export interface AreaReportRow {
-  ca: string;
-  tuan: Tuan;
-  total: number;
-  areas: { khu_vuc: string; count: number }[]; // sắp xếp giảm dần theo số lượng
-  topArea: string | null;
-  topCount: number;
-}
-
-/**
- * Với mỗi Ca × Tuần hiện tại (1/2/3), NV đang tập trung nhận việc chủ yếu ở
- * khu vực/line nào — dùng khu_vực_line hiện tại của NV (Sup gán khi phân công).
- */
-export function getAreaReportByWeek(): AreaReportRow[] {
-  const employees = readDB().employees;
-  const groups = new Map<string, Employee[]>();
-  for (const e of employees) {
-    const tuan = currentWeekOf(e);
-    if (tuan === 0) continue;
-    const key = `${e.ca}|${tuan}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(e);
-  }
-
-  const rows: AreaReportRow[] = [];
-  for (const [key, emps] of groups) {
-    const [ca, tuanStr] = key.split("|");
-    const tuan = Number(tuanStr) as Tuan;
-    const areaCounts = new Map<string, number>();
-    for (const e of emps) {
-      const area = e.khu_vuc_line || "Chưa gán khu vực";
-      areaCounts.set(area, (areaCounts.get(area) ?? 0) + 1);
-    }
-    const areas = [...areaCounts.entries()]
-      .map(([khu_vuc, count]) => ({ khu_vuc, count }))
-      .sort((a, b) => b.count - a.count);
-    rows.push({
-      ca,
-      tuan,
-      total: emps.length,
-      areas,
-      topArea: areas[0]?.khu_vuc ?? null,
-      topCount: areas[0]?.count ?? 0,
-    });
-  }
-
-  return rows.sort((a, b) => a.ca.localeCompare(b.ca) || a.tuan - b.tuan);
-}
-
 export interface SelfEvalSummary {
   total: number;
   avgStars: number;
@@ -206,6 +157,22 @@ export function getSelfEvalSummary(): SelfEvalSummary {
     mucDoHuongDanCounts,
     khoiLuongCongViecCounts,
   };
+}
+
+/** Công việc Sup đã gán cho NV ở tuần hiện tại (rơi về công việc gán gần nhất
+ * nếu tuần hiện tại chưa có phân công) — để HRBP theo dõi NV đang làm gì. */
+export function getAssignedJobByEmployeeId(): Record<string, string> {
+  const db = readDB();
+  const result: Record<string, string> = {};
+  for (const e of db.employees) {
+    const tuan = currentWeekOf(e);
+    const forCurrent = db.assignments.find((a) => a.employee_id === e.id && a.tuan === tuan);
+    const latest = db.assignments
+      .filter((a) => a.employee_id === e.id)
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+    result[e.id] = (forCurrent ?? latest)?.cong_viec ?? "";
+  }
+  return result;
 }
 
 export interface RiskFlag {
